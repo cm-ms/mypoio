@@ -115,6 +115,61 @@ public class CpfValidator implements ExcelRule<ExcelCpf> {
 ```
 
 ---
+## Current Validations
+
+| Validation | Description |
+|-----------|-------------|
+| `@ExcelAllowedValues` | Restricts the cell value to a predefined list of allowed values. |
+| `@ExcelBoolean` | Validates that the cell value represents a boolean (`true/false`, `yes/no`, etc., depending on implementation). |
+| `@ExcelEmail` | Validates that the cell value is a valid email format. |
+| `@ExcelNumber` | Ensures the cell contains a numeric value. |
+| `@ExcelFuture` | Ensures the date value is in the future. |
+| `@ExcelPast` | Ensures the date value is in the past. |
+| `@ExcelPatternDate` | Validates the date format against a predefined pattern. |
+| `@ExcelPhone` | Validates that the cell value matches a phone number format. |
+| `@ExcelRegex` | Validates the cell value using a custom regular expression. |
+| `@ExcelRequired` | Ensures the cell is not null or blank. |
+| `@ExcelSize` | Validates the length of a string (min and/or max size). |
+
+
+---
+## Project Roadmap
+
+### Completed / Implemented
+
+1. Dynamic Excel reading using annotations (values initially treated as `String`) ✅  
+2. Dynamic validation engine inspired by Jakarta Validation ✅  
+3. Support for custom validation rules beyond the built-in ones ✅  
+4. Ability to skip validations when needed ✅  
+5. Minimized coupling through dynamic initializers and interfaces ✅  
+6. Reduced dependency on error-return structures (cleaner result model) ✅  
+7. Decoupling from Apache POI (used as default implementation, not a hard dependency) ✅  
+
+---
+
+### Planned / In Progress
+
+8. Column mapping by name (currently supported only by column index)  
+9. Type conversion after validation (String → Integer, LocalDate, Enum, etc.)  
+10. Data normalization layer  
+   - Example: `Male/Female`, `M/F`, `1/0` → single canonical representation  
+   - Especially useful for Data Warehousing and analytics use cases  
+11. Multi-sheet processing  
+   - Support reading multiple sheets (1..N) instead of a fixed sheet  
+12. Direct Excel-to-Type processing  
+   - Optional fast path that skips intermediate validation steps when desired  
+13. Cross-column validation  
+   - Example: if column A is filled, column B becomes required  
+
+---
+
+### Long-Term Goals
+
+- Provide a fully configurable processing pipeline  
+- Enable enterprise-grade data ingestion with strong validation and normalization  
+- Keep the core lightweight, extensible, and framework-agnostic
+
+---
 
 ## Contribution
 
