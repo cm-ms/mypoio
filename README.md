@@ -30,6 +30,9 @@ MyPoio cooks it for you. It takes the "raw" POI and serves you clean, validated,
 
 ```xml
 <dependency>
+  <groupId>io.github.cm-ms</groupId>
+  <artifactId>mypoio</artifactId>
+  <version>1.0.0</version>
 </dependency>
 ```
 
