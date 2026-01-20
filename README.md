@@ -70,9 +70,9 @@ public class MyController {
     public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
         try (InputStream is = file.getInputStream()) {
 
-            ExcelReader<PersonRow> reader = new ExcelReader<>(PersonRow.class);
+            ExcelReader<EmployeeDto> reader = new ExcelReader<>(EmployeeDto.class);
 
-            ExcelResult<PersonRow> result = reader.initRead(is);
+            ExcelResult<EmployeeDto> result = reader.initRead(is);
 
             if (result.hasErrors()) {
                 return ResponseEntity.badRequest().body(result.getErrors());
