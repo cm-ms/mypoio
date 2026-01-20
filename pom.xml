@@ -125,6 +125,7 @@
                 </executions>
                 <configuration>
                     <failOnError>false</failOnError>
+                    <doclint>none</doclint>
                 </configuration>
             </plugin>
 
@@ -139,20 +140,28 @@
                         <goals>
                             <goal>sign</goal>
                         </goals>
+                        <configuration>
+                            <gpgArguments>
+                                <arg>--pinentry-mode</arg>
+                                <arg>loopback</arg>
+                            </gpgArguments>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.7.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>central</publishingServerId>
+                    <autoPublish>true</autoPublish>
+                    <waitUntil>published</waitUntil>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
-
-
-    <distributionManagement>
-        <repository>
-            <id>central</id>
-            <name>Maven Central</name>
-            <url>https://central.sonatype.com/api/v1/publish</url>
-        </repository>
-    </distributionManagement>
-
 
 </project>
