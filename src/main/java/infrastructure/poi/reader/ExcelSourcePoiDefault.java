@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class ExcelSourcePoiDefault implements ExcelSource {
-    // private static final Logger log = LoggerFactory.getLogger(ExcelSourcePoiDefault.class);
 
     private final Workbook workbook;
 
@@ -51,7 +50,7 @@ public class ExcelSourcePoiDefault implements ExcelSource {
             try {
                 workbook.close();
             } catch (IOException e) {
-                //log.error("Warning: Failed to close Workbook: {}", e.getMessage());
+                throw new ExcelPipelineException("Error closing workbook. Check if the file is open. Message: {}", e.getMessage());
             }
         }
     }
