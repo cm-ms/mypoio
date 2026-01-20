@@ -97,18 +97,14 @@ public @interface ExcelCpf {
 ```
 
 ```java
-public class CpfValidator implements ExcelRule<ExcelCpf> {
+public class CpfValidator implements AnnotationValidator<ExcelCpf> {
 
     @Override
-    public void validate(ExcelCell cell, ExcelCpf annotation, List<ExcelError> errors) {
+    public void validate(ExcelAllowedValues ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
         if (cell.isBlank()) return;
 
         if (!isValidCpf(cell.getValue())) {
-            errors.add(new ExcelError(
-                cell.getAddress(),
-                annotation.message(),
-                cell.getValue()
-            ));
+            res.addErrorData(ExcelError.of(field, ErrorCode.of("DOCUMENT"), msg, excelCell));
         }
     }
 }
