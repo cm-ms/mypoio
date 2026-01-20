@@ -4,59 +4,99 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>MyPoio</name>
-    <description>A high-performance, annotation-driven Excel-to-POJO mapping and validation engine for Java, powered by Apache POI and Reflection.</description>
-
-    <groupId>io.github.cmms</groupId>
+    <groupId>io.github.cm-ms</groupId>
     <artifactId>mypoio</artifactId>
     <version>1.0.0</version>
     <packaging>jar</packaging>
+
+    <name>MyPoio</name>
+    <description>A high-performance, annotation-driven Excel-to-POJO mapping and validation engine for Java.
+    </description>
+
+    <url>https://github.com/cm-ms/mypoio</url>
+
+    <licenses>
+        <license>
+            <name>MIT License</name>
+            <url>https://opensource.org/licenses/MIT</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>cm-ms</id>
+            <name>Clebson Machado</name>
+            <email>clebmachado.em@gmail.com</email>
+            <organization>cm-ms</organization>
+            <organizationUrl>https://github.com/cm-ms</organizationUrl>
+        </developer>
+    </developers>
+
+
+    <scm>
+        <connection>scm:git:https://github.com/cm-ms/mypoio.git</connection>
+        <developerConnection>scm:git:https://github.com/cm-ms/mypoio.git</developerConnection>
+        <url>https://github.com/cm-ms/mypoio</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <cmms.poi.version>5.5.0</cmms.poi.version>
-        <cmms.junit.version>5.10.0</cmms.junit.version>
-        <cmms.mockito.version>5.5.0</cmms.mockito.version>
+        <cm-ms.poi.version>5.5.0</cm-ms.poi.version>
+        <cm-ms.junit.version>5.10.0</cm-ms.junit.version>
+        <cm-ms.mockito.version>5.5.0</cm-ms.mockito.version>
 
         <maven-source-plugin.version>3.3.0</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.6.3</maven-javadoc-plugin.version>
+        <maven-gpg-plugin.version>3.1.0</maven-gpg-plugin.version>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi</artifactId>
-            <version>${cmms.poi.version}</version>
+            <version>${cm-ms.poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.poi</groupId>
             <artifactId>poi-ooxml</artifactId>
-            <version>${cmms.poi.version}</version>
+            <version>${cm-ms.poi.version}</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>${cmms.junit.version}</version>
+            <version>${cm-ms.junit.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>${cmms.mockito.version}</version>
+            <version>${cm-ms.mockito.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${cmms.mockito.version}</version>
+            <version>${cm-ms.mockito.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -70,6 +110,46 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven-javadoc-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <failOnError>false</failOnError>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven-gpg-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
+
+    <distributionManagement>
+        <repository>
+            <id>central</id>
+            <url>https://central.sonatype.com/api/v1/publish</url>
+        </repository>
+    </distributionManagement>
+
 </project>

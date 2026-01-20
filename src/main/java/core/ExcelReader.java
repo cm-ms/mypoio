@@ -18,7 +18,7 @@ import java.lang.annotation.Annotation;
  * <p>The {@code ExcelReader} orchestrates the data pipeline: opens the data source (Source),
  * executes validations, and maps rows to Java objects (POJOs) using Reflection.</p>
  *
- * <h3>Usage examples:</h3>
+ * <b>Usage examples:</b>
  * <pre>{@code
  * // Simple read using Apache POI (default)
  * ExcelResult<Person> result = new ExcelReader<>(Person.class)

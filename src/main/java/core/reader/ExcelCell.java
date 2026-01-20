@@ -2,7 +2,7 @@ package core.reader;
 
 /**
  * Represents a single unit of data within an Excel spreadsheet.
- * * <p>This interface provides access to the cell's raw value and its
+ * <p>This interface provides access to the cell's raw value and its
  * physical location. It also includes default utility methods to simplify
  * common validation tasks like blank checks and regex matching.</p>
  */
@@ -44,10 +44,10 @@ public interface ExcelCell {
 
     /**
      * Validates the cell value against a regular expression.
-     * * <p><b>Note:</b> Returns {@code false} (valid) if the cell is blank,
+     * <p><b>Note:</b> Returns {@code false} (valid) if the cell is blank,
      * as format validation usually only applies to present values.
      * Mandatory checks should be handled by a separate required-field validator.</p>
-     * * @param regex The regular expression to match against.
+     * @param regex The regular expression to match against.
      * @return {@code true} if the value does NOT match the regex; {@code false} otherwise.
      */
     default boolean doesNotMatch(String regex) {
