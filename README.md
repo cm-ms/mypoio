@@ -101,9 +101,9 @@ public class CpfValidator implements AnnotationValidator<ExcelCpf> {
 
     @Override
     public void validate(ExcelAllowedValues ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
-        if (cell.isBlank()) return;
+        if (excelCell.isBlank()) return;
 
-        if (!isValidCpf(cell.getValue())) {
+        if (!isValidCpf(excelCell.getValue())) {
             res.addErrorData(ExcelError.of(field, ErrorCode.of("DOCUMENT"), msg, excelCell));
         }
     }
