@@ -1,0 +1,14 @@
+package annotations.validators;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface ExcelPast {
+    // A data informada no Excel seja anterior à data atual do sistema.
+    String pattern() default "dd/MM/yyyy";
+    String message() default "[Address] - A data deve estar no passado.";
+}
