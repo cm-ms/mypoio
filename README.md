@@ -63,22 +63,28 @@ public class EmployeeDto {
 ### 2. Read the File
 
 ```java
-File file = new File("employees.xlsx");
+@RestController
+@RequestMapping
+public class MyController {
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
+        try (InputStream is = file.getInputStream()) {
 
-try (ExcelReader<EmployeeDto> reader = new ExcelReader<>(EmployeeDto.class)) {
+            ExcelReader<PersonRow> reader = new ExcelReader<>(PersonRow.class);
 
-    ExcelResult<EmployeeDto> result = reader.read(file.getAbsolutePath());
+            ExcelResult<PersonRow> result = reader.initRead(is);
 
-    result.getSuccessList().forEach(emp ->
-        System.out.println("Importing: " + emp.getName())
-    );
+            if (result.hasErrors()) {
+                return ResponseEntity.badRequest().body(result.getErrors());
+            }
 
-    result.getErrorList().forEach(error ->
-        System.out.println("Error at " + error.getAddress() + ": " + error.getMessage())
-    );
+            return ResponseEntity.ok(result.getData());
 
-} catch (Exception e) {
-    e.printStackTrace();
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError()
+                    .body("Erro ao processar o arquivo: " + e.getMessage());
+        }
+    }
 }
 ```
 
