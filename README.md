@@ -113,7 +113,62 @@ public class CpfValidator implements ExcelRule<ExcelCpf> {
     }
 }
 ```
+---
+## Annotation Processing Rules
 
+### `@ExcelModel`
+
+Marks a class as an Excel Sheet model.
+
+- Only classes annotated with `@ExcelModel` are considered during the read process.
+- Defines which sheet should be read (by index).
+
+```java
+@ExcelModel(index = 0)
+public class EmployeeDto {
+}
+```
+
+Classes without `@ExcelModel` are not processed.
+
+---
+
+### `@ExcelColumn`
+
+Defines a field-to-column mapping.
+
+- Only fields annotated with `@ExcelColumn` are:
+  - Read from the Excel sheet
+  - Eligible for validation
+- Fields without `@ExcelColumn` are ignored by the engine.
+
+```java
+@ExcelColumn(index = 1)
+private String email;
+```
+
+---
+
+### Validation Annotations
+
+Validation annotations act as constraints applied to a column.
+
+- Validation annotations are evaluated **only** on fields annotated with `@ExcelColumn`
+- Validation annotations used **without** `@ExcelColumn` are **silently ignored** and will not be processed
+
+Valid example:
+```java
+@ExcelColumn(index = 1)
+@ExcelEmail
+@ExcelRequired
+private String email;
+```
+
+Ignored example:
+```java
+@ExcelEmail
+private String email;
+```
 ---
 ## Current Validations
 
