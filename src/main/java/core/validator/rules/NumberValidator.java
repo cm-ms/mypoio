@@ -5,17 +5,15 @@ import core.reader.ExcelCell;
 import core.validator.AnnotationValidator;
 import domain.ErrorCode;
 import domain.ExcelError;
-import domain.ExcelResult;
 
-import java.lang.reflect.Field;
+import java.util.List;
 
 public class NumberValidator implements AnnotationValidator<ExcelNumber> {
 
     @Override
-    public void validate(ExcelNumber ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
-
+    public void validate(ExcelNumber annotation, ExcelCell excelCell, List<ExcelError> errorList) {
         if (excelCell.isBlank()) {
-            // Importante, isso deixa as anotações independentes. Pra ser required tem que anotar com Required
+            // Important: This makes the notes independent. To be mandatory, it must be marked as Mandatory.
             return;
         }
 
@@ -24,18 +22,18 @@ public class NumberValidator implements AnnotationValidator<ExcelNumber> {
         try {
             double number = Double.parseDouble(value.replace(",", "."));
 
-            if (number < ann.min() || number > ann.max()) {
-                String msg = ann.rangeMessage()
+            if (number < annotation.min() || number > annotation.max()) {
+                String msg = annotation.rangeMessage()
                         .replace("{address}", excelCell.getAddress())
-                        .replace("{min}", String.valueOf(ann.min()))
-                        .replace("{max}", String.valueOf(ann.max()));
+                        .replace("{min}", String.valueOf(annotation.min()))
+                        .replace("{max}", String.valueOf(annotation.max()));
 
-                res.addErrorData(ExcelError.of(field, ErrorCode.OUT_OF_RANGE, msg, excelCell));
+                errorList.add(ExcelError.of(ErrorCode.OUT_OF_RANGE, msg, excelCell.getAddress()));
             }
 
         } catch (NumberFormatException e) {
-            String msg = ann.message().replace("{address}", excelCell.getAddress());
-            res.addErrorData(ExcelError.of(field, ErrorCode.NUMBER, msg, excelCell));
+            String msg = annotation.message().replace("{address}", excelCell.getAddress());
+            errorList.add((ExcelError.of(ErrorCode.NUMBER, msg, excelCell.getAddress())));
         }
     }
 }

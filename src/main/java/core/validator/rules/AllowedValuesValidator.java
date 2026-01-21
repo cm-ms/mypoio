@@ -5,25 +5,26 @@ import core.reader.ExcelCell;
 import core.validator.AnnotationValidator;
 import domain.ErrorCode;
 import domain.ExcelError;
-import domain.ExcelResult;
 
-import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.List;
 
 public class AllowedValuesValidator implements AnnotationValidator<ExcelAllowedValues> {
+
     @Override
-    public void validate(ExcelAllowedValues ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
+    public void validate(ExcelAllowedValues annotation, ExcelCell excelCell, List<ExcelError> errorList) {
         if (excelCell.isBlank()) return;
 
-        boolean isAllowed = Arrays.stream(ann.value())
+        boolean isAllowed = Arrays.stream(annotation.value())
                 .anyMatch(v -> v != null && v.equalsIgnoreCase(excelCell.getValue()));
 
         if (!isAllowed) {
-            String allowed = String.join(", ", ann.value());
-            String msg = ann.message()
-                    .replace("[Address]", excelCell.getAddress())
+            String allowed = String.join(", ", annotation.value());
+            String msg = annotation.message()
+                    .replace("{address}", excelCell.getAddress())
                     .replace("{allowedValues}", allowed);
-            res.addErrorData(ExcelError.of(field, ErrorCode.ALLOWED_VALUE, msg, excelCell));
+
+            errorList.add(ExcelError.of(ErrorCode.ALLOWED_VALUE, msg, excelCell.getAddress()));
         }
     }
 }

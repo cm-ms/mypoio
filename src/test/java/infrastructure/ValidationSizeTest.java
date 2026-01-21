@@ -3,7 +3,6 @@ package infrastructure;
 import core.ExcelReader;
 import domain.ErrorCode;
 import dtos.PersonSizeTestModel;
-import helper.HelperTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -15,9 +14,20 @@ public class ValidationSizeTest {
         var result = new ExcelReader<>(PersonSizeTestModel.class, 1)
                 .initRead(SOURCE);
 
-        var error = HelperTest.getExcelError(result, "C7");
+        Assertions.assertFalse(result.getRows().isEmpty());
+        Assertions.assertEquals(7, result.getNumberOfRows());
+
+        var item = result.getRows().get(5);
+
+        Assertions.assertFalse(item.getErrors().isEmpty());
+        var error = item.getErrors().get(0);
 
         Assertions.assertEquals(ErrorCode.SIZE.getCode(), error.getErrorCode());
-        Assertions.assertTrue(error.getValue().contains("Av Central"));
+        Assertions.assertEquals("C7", error.getAddress());
+
+        PersonSizeTestModel data = item.getData();
+        Assertions.assertTrue(data.getAddress().contains("Av Central"));
+
+
     }
 }

@@ -9,4 +9,8 @@ public class PersonSizeTestModel {
     @ExcelColumn(index = 2)
     @ExcelSize(max = 5)
     private String address;
+
+    public String getAddress() {
+        return address;
+    }
 }

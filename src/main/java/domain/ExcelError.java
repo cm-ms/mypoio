@@ -1,45 +1,37 @@
 package domain;
 
-import core.reader.ExcelCell;
-
-import java.lang.reflect.Field;
+import java.util.Objects;
 
 public class ExcelError {
 
-    private final String field;
     private final String errorCode;
     private final String message;
     private final String address;
-    private final int rowLine;
-    private final String value;
 
-    private ExcelError(String field, String errorCode, String message, String address, int rowLine, String value) {
-        this.field = field;
+    private ExcelError(
+            String errorCode,
+            String message,
+            String address
+    ) {
         this.errorCode = errorCode;
         this.message = message;
         this.address = address;
-        this.rowLine = rowLine;
-        this.value = value;
     }
 
-    public static ExcelError of(Field field, ErrorCode errorCode, String message, ExcelCell excelCell) {
+    public static ExcelError of(ErrorCode errorCode, String message, String address) {
         return new ExcelError(
-                field.getName(),
                 errorCode.getCode(),
                 message,
-                excelCell.getAddress(),
-                excelCell.getRowNum(),
-                excelCell.getValue()
+                address
         );
     }
 
-    public static ExcelError ofLine(int line, String message, ErrorCode errorCode) {
-        return new ExcelError("", errorCode.getCode(), message, "", line, "");
-    }
-
-
-    public String getField() {
-        return field;
+    public static ExcelError of(ErrorCode errorCode, String message) {
+        return new ExcelError(
+                errorCode.getCode(),
+                message,
+                null
+        );
     }
 
     public String getErrorCode() {
@@ -54,23 +46,24 @@ public class ExcelError {
         return address;
     }
 
-    public int getRowLine() {
-        return rowLine;
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        ExcelError that = (ExcelError) o;
+        return Objects.equals(errorCode, that.errorCode) && Objects.equals(message, that.message) && Objects.equals(address, that.address);
     }
 
-    public String getValue() {
-        return value;
+    @Override
+    public int hashCode() {
+        return Objects.hash(errorCode, message, address);
     }
 
     @Override
     public String toString() {
         return "ExcelError{" +
-                "field='" + getField() + '\'' +
-                ", errorCode=" + getErrorCode() +
-                ", message='" + getMessage() + '\'' +
-                ", address='" + getAddress() + '\'' +
-                ", rowLine=" + getRowLine() +
-                ", value='" + getValue() + '\'' +
+                "errorCode='" + errorCode + '\'' +
+                ", message='" + message + '\'' +
+                ", address='" + address + '\'' +
                 '}';
     }
 }

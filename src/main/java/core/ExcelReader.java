@@ -1,7 +1,7 @@
 package core;
 
 import core.mapper.ExcelMapper;
-import core.mapper.ReflectionExcelMapper;
+import core.mapper.ReflectionExcelMapperDefault;
 import core.reader.ExcelSource;
 import core.reader.ExcelSourceFactory;
 import core.validator.AnnotationValidator;
@@ -46,7 +46,7 @@ public class ExcelReader<T> {
     private boolean skipValidation;
 
     private ExcelSourceFactory excelSourceFactory;
-    private core.mapper.ExcelMapper<T> excelMapper;
+    private ExcelMapper<T> excelMapper;
     private ValidationEngine validationEngine;
 
     /**
@@ -108,6 +108,11 @@ public class ExcelReader<T> {
         return this;
     }
 
+    public ExcelReader<T> withExcelMapper(ExcelMapper<T> excelMapper) {
+        this.excelMapper = excelMapper;
+        return this;
+    }
+
 
     /**
      * Executa o processamento a partir de um arquivo físico.
@@ -134,6 +139,6 @@ public class ExcelReader<T> {
 
     private ExcelMapper<T> resolveMapper(ExcelSource excelSource) {
         ValidationEngine engineToUse = this.skipValidation ? null : this.validationEngine;
-        return (excelMapper != null) ? excelMapper : new ReflectionExcelMapper<>(startRow, excelSource, clazz, engineToUse);
+        return (excelMapper != null) ? excelMapper : new ReflectionExcelMapperDefault<>(startRow, excelSource, clazz, engineToUse);
     }
 }

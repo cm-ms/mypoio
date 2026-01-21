@@ -19,7 +19,8 @@ public class ExcelCustomValidationTest {
         var response = reader.initRead(SOURCE);
 
         Assertions.assertTrue(response.hasErrors());
-        Assertions.assertEquals(5, response.errorSize());
+        Assertions.assertEquals(5, response.getErrorCount());
+        Assertions.assertTrue(response.isPartiallySuccess());
     }
 
     @Test

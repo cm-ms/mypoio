@@ -5,20 +5,18 @@ import core.reader.ExcelCell;
 import core.validator.AnnotationValidator;
 import domain.ErrorCode;
 import domain.ExcelError;
-import domain.ExcelResult;
 
-import java.lang.reflect.Field;
+import java.util.List;
 
 public class EmailValidator implements AnnotationValidator<ExcelEmail> {
 
     @Override
-    public void validate(ExcelEmail ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
+    public void validate(ExcelEmail annotation, ExcelCell excelCell, List<ExcelError> errorList) {
         if (excelCell.isBlank()) return;
 
-        if (excelCell.doesNotMatch(ann.regex())) {
-            String msg = ann.message().replace("[Address]", excelCell.getAddress());
-
-            res.addErrorData(ExcelError.of(field, ErrorCode.EMAIL, msg, excelCell));
+        if (excelCell.doesNotMatch(annotation.regex())) {
+            String msg = annotation.message().replace("{address}", excelCell.getAddress());
+            errorList.add(ExcelError.of(ErrorCode.EMAIL, msg, excelCell.getAddress()));
         }
     }
 }

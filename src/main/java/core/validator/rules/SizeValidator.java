@@ -5,22 +5,23 @@ import core.reader.ExcelCell;
 import core.validator.AnnotationValidator;
 import domain.ErrorCode;
 import domain.ExcelError;
-import domain.ExcelResult;
 
-import java.lang.reflect.Field;
+import java.util.List;
 
 public class SizeValidator implements AnnotationValidator<ExcelSize> {
     @Override
-    public void validate(ExcelSize ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
+    public void validate(ExcelSize annotation, ExcelCell excelCell, List<ExcelError> errorList) {
         if (excelCell.isBlank()) return;
 
         int length = excelCell.valueLength();
-        if (length < ann.min() || length > ann.max()) {
-            String msg = ann.message()
-                    .replace("[Address]", excelCell.getAddress())
-                    .replace("{min}", String.valueOf(ann.min()))
-                    .replace("{max}", String.valueOf(ann.max()));
-            res.addErrorData(ExcelError.of(field, ErrorCode.SIZE, msg, excelCell));
+
+        if (length < annotation.min() || length > annotation.max()) {
+            String msg = annotation.message()
+                    .replace("{address}", excelCell.getAddress())
+                    .replace("{min}", String.valueOf(annotation.min()))
+                    .replace("{max}", String.valueOf(annotation.max()));
+
+            errorList.add(ExcelError.of(ErrorCode.SIZE, msg, excelCell.getAddress()));
         }
     }
 }

@@ -5,25 +5,24 @@ import core.reader.ExcelCell;
 import core.validator.AnnotationValidator;
 import domain.ErrorCode;
 import domain.ExcelError;
-import domain.ExcelResult;
 
-import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 public class PastValidator implements AnnotationValidator<ExcelPast> {
     @Override
-    public void validate(ExcelPast ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
+    public void validate(ExcelPast annotation, ExcelCell excelCell, List<ExcelError> errorList) {
         if (excelCell.isBlank()) return;
 
         try {
-            LocalDate date = LocalDate.parse(excelCell.getValue(), DateTimeFormatter.ofPattern(ann.pattern()));
+            LocalDate date = LocalDate.parse(excelCell.getValue(), DateTimeFormatter.ofPattern(annotation.pattern()));
             if (!date.isBefore(LocalDate.now())) {
-                String msg = ann.message().replace("[Address]", excelCell.getAddress());
-                res.addErrorData(ExcelError.of(field, ErrorCode.DATE_PATTERN_PAST, msg, excelCell));
+                String msg = annotation.message().replace("{address}", excelCell.getAddress());
+                errorList.add(ExcelError.of(ErrorCode.DATE_PATTERN_PAST, msg, excelCell.getAddress()));
             }
         } catch (Exception e) {
-            // Todo: adicionar erro que não é uma data válida
+            // The exception will be ignored, since standards are handled by @PatternDateValidator
         }
     }
 }

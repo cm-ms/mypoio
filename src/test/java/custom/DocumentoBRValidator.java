@@ -4,18 +4,17 @@ import core.reader.ExcelCell;
 import core.validator.AnnotationValidator;
 import domain.ErrorCode;
 import domain.ExcelError;
-import domain.ExcelResult;
 
-import java.lang.reflect.Field;
+import java.util.List;
 
 public class DocumentoBRValidator implements AnnotationValidator<ExcelDocumentoBR> {
 
     @Override
-    public void validate(ExcelDocumentoBR ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
+    public void validate(ExcelDocumentoBR annotation, ExcelCell excelCell, List<ExcelError> errorList) {
         if (excelCell.isBlank()) return;
 
         if (!excelCell.doesNotMatch(".*[a-zA-Z].*")) {
-            reportError(ann, field, excelCell, res);
+            reportError(annotation, excelCell, errorList);
             return;
         }
 
@@ -23,20 +22,20 @@ public class DocumentoBRValidator implements AnnotationValidator<ExcelDocumentoB
 
         boolean isValid = false;
 
-        if (digitsOnly.length() == 11 && ann.validarCpf()) {
+        if (digitsOnly.length() == 11 && annotation.validarCpf()) {
             isValid = isCpfValido(digitsOnly);
-        } else if (digitsOnly.length() == 14 && ann.validarCnpj()) {
+        } else if (digitsOnly.length() == 14 && annotation.validarCnpj()) {
             isValid = isCnpjValido(digitsOnly);
         }
 
         if (!isValid) {
-            reportError(ann, field, excelCell, res);
+            reportError(annotation, excelCell, errorList);
         }
     }
 
-    private void reportError(ExcelDocumentoBR ann, Field field, ExcelCell dr, ExcelResult<?> res) {
+    private void reportError(ExcelDocumentoBR ann, ExcelCell dr, List<ExcelError> res) {
         String msg = ann.message().replace("[Address]", dr.getAddress());
-        res.addErrorData(ExcelError.of(field, ErrorCode.of("INVALID_DOCUMENT"), msg, dr));
+        res.add(ExcelError.of(ErrorCode.of("INVALID_DOCUMENT"), msg, dr.getAddress()));
     }
 
     private boolean isCpfValido(String cpf) {
