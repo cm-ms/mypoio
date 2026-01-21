@@ -9,9 +9,12 @@ import core.validator.ValidationEngine;
 import domain.ErrorCode;
 import domain.ExcelError;
 import domain.ExcelResult;
+import domain.ExcelResultItem;
 import exceptions.ExcelPipelineException;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReflectionExcelMapper<T> implements ExcelMapper<T> {
     private final int startRow;
@@ -26,18 +29,20 @@ public class ReflectionExcelMapper<T> implements ExcelMapper<T> {
         this.validationEngine = validationEngine;
     }
 
-
     public ExcelResult<T> mapperData() {
         ExcelResult<T> excelResult = new ExcelResult<>();
+
         ExcelSheet sheet = source.readSheet(clazz);
 
         Field[] fields = clazz.getDeclaredFields();
+
         for (Field f : fields) {
             f.setAccessible(true);
         }
 
         for (int i = startRow; i <= sheet.getLastRowNum(); i++) {
             try {
+                List<ExcelError> errors = new ArrayList<>();
                 ExcelRow excelRow = sheet.getExcelRow(i);
 
                 if (excelRow.rowIsNullOrEmpty()) {
@@ -57,17 +62,14 @@ public class ReflectionExcelMapper<T> implements ExcelMapper<T> {
                     field.set(object, excelCell.getValue());
 
                     if (this.validationEngine != null) {
-                        this.validationEngine.validate(field, excelCell, excelResult);
+                        this.validationEngine.validate(field, excelCell, errors);
                     }
-
                 }
-                excelResult.addData(object);
+                excelResult.addRow(new ExcelResultItem<>(object, i, errors));
             } catch (Exception e) {
-                excelResult.addErrorData(ExcelError.ofLine(
-                        i + 1,
-                        "Falha inesperada ao processar linha: " + e.getMessage(),
-                        ErrorCode.UNKNOWN
-                ));
+                excelResult.addGeneralError(
+                        ExcelError.of(ErrorCode.UNKNOWN, "Unexpected failure while processing line: " + e.getMessage())
+                );
             }
         }
 
@@ -79,7 +81,7 @@ public class ReflectionExcelMapper<T> implements ExcelMapper<T> {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException e) {
-            throw new ExcelPipelineException("A classe " + clazz.getSimpleName() + " precisa de um construtor público sem argumentos.");
+            throw new ExcelPipelineException("The class " + clazz.getSimpleName() + " needs a public constructor with no arguments.");
         }
     }
 }

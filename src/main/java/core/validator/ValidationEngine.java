@@ -3,11 +3,12 @@ package core.validator;
 import annotations.validators.*;
 import core.reader.ExcelCell;
 import core.validator.rules.*;
-import domain.ExcelResult;
+import domain.ExcelError;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ValidationEngine {
@@ -32,15 +33,15 @@ public class ValidationEngine {
         this.validators.put(annotationType, validator);
     }
 
-    public void validate(Field field, ExcelCell excelCell, ExcelResult<?> result) {
-        int initialErrorCount = result.getErrors().size();
-        // Todo: verificar como ficou o comportamento da ordem das anotações
+    public void validate(Field field, ExcelCell excelCell, List<ExcelError> errorList) {
+        int initialErrorCount = errorList.size();
+        // Overall: check how the order of the annotations behaved.
 
         for (Annotation annotation : field.getAnnotations()) {
             AnnotationValidator<?> validator = validators.get(annotation.annotationType());
             if (validator != null) {
-                executeValidator(validator, annotation, field, excelCell, result);
-                if (result.getErrors().size() > initialErrorCount) {
+                executeValidator(validator, annotation, excelCell, errorList);
+                if (errorList.size() > initialErrorCount) {
                     break;
                 }
             }
@@ -48,8 +49,13 @@ public class ValidationEngine {
     }
 
     @SuppressWarnings("unchecked")
-    private <A extends Annotation> void executeValidator(AnnotationValidator<A> validator, Annotation annotation, Field field, ExcelCell excelCell, ExcelResult<?> result) {
-        validator.validate((A) annotation, field, excelCell, result);
+    private <A extends Annotation> void executeValidator(
+            AnnotationValidator<A> validator,
+            Annotation annotation,
+            ExcelCell excelCell,
+            List<ExcelError> errorList
+    ) {
+        validator.validate((A) annotation, excelCell, errorList);
     }
 
 }
