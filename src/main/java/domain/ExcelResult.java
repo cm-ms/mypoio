@@ -14,6 +14,7 @@ public class ExcelResult<T> {
 
     private List<ExcelResultItem<T>> rows;
     private List<ExcelError> generalErrors;
+    private long errorCount;
 
     /**
      * Constructs an empty ExcelResult with no rows and no general errors.
@@ -21,6 +22,7 @@ public class ExcelResult<T> {
     public ExcelResult() {
         this.rows = new ArrayList<>();
         this.generalErrors = new ArrayList<>();
+        this.errorCount = 0L;
     }
 
     /**
@@ -31,6 +33,7 @@ public class ExcelResult<T> {
     public void addGeneralError(ExcelError excelError) {
         if (excelError != null) {
             this.generalErrors.add(excelError);
+            errorCount++;
         }
     }
 
@@ -42,6 +45,7 @@ public class ExcelResult<T> {
     public void addRow(ExcelResultItem<T> item) {
         if (Objects.nonNull(item)) {
             rows.add(item);
+            errorCount += item.getErrors().size();
         }
     }
 
@@ -124,6 +128,10 @@ public class ExcelResult<T> {
                 .filter(ExcelResultItem::isValid)
                 .map(ExcelResultItem::getData)
                 .collect(Collectors.toList());
+    }
+
+    public long getErrorCount() {
+        return errorCount;
     }
 
 }
