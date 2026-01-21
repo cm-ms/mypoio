@@ -9,6 +9,9 @@ public class ExcelResult<T> {
     private List<T> data = new ArrayList<>();
     private List<ExcelError> errors = new ArrayList<>();
 
+    private ExcelResultItem<T> rows;
+    private List<ExcelError> generalErrors;
+
     public void addData(T item) {
         if (item != null) {
             this.data.add(item);

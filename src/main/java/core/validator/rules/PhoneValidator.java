@@ -15,7 +15,7 @@ public class PhoneValidator implements AnnotationValidator<ExcelPhone> {
         if (excelCell.isBlank()) return;
 
         if (excelCell.doesNotMatch(ann.regex())) {
-            String msg = ann.message().replace("[Address]", excelCell.getAddress());
+            String msg = ann.message().replace("{address}", excelCell.getAddress());
             res.addErrorData(ExcelError.of(field, ErrorCode.PHONE, msg, excelCell));
         }
     }

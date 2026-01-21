@@ -15,7 +15,7 @@ public class NumberValidator implements AnnotationValidator<ExcelNumber> {
     public void validate(ExcelNumber ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
 
         if (excelCell.isBlank()) {
-            // Importante, isso deixa as anotações independentes. Pra ser required tem que anotar com Required
+            // Important: This makes the notes independent. To be mandatory, it must be marked as Mandatory.
             return;
         }
 

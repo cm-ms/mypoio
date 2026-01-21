@@ -23,7 +23,7 @@ public class PatternDateValidator implements AnnotationValidator<ExcelPatternDat
             LocalDate.parse(excelCell.getValue(), formatter);
         } catch (DateTimeParseException e) {
             String msg = ann.message()
-                    .replace("[Address]", excelCell.getAddress())
+                    .replace("{address}", excelCell.getAddress())
                     .replace("{pattern}", ann.value());
             res.addErrorData(ExcelError.of(field, ErrorCode.DATE_PATTERN, msg, excelCell));
         }

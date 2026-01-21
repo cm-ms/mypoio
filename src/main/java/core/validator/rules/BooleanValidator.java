@@ -24,7 +24,7 @@ public class BooleanValidator implements AnnotationValidator<ExcelBoolean> {
                 .anyMatch(v -> v.equalsIgnoreCase(cellValue));
 
         if (!isTrue && !isFalse) {
-            String msg = ann.message().replace("[Address]", excelCell.getAddress());
+            String msg = ann.message().replace("{address}", excelCell.getAddress());
             res.addErrorData(ExcelError.of(field, ErrorCode.BOOLEAN, msg, excelCell));
         }
     }

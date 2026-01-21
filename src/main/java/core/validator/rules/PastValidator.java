@@ -19,7 +19,7 @@ public class PastValidator implements AnnotationValidator<ExcelPast> {
         try {
             LocalDate date = LocalDate.parse(excelCell.getValue(), DateTimeFormatter.ofPattern(ann.pattern()));
             if (!date.isBefore(LocalDate.now())) {
-                String msg = ann.message().replace("[Address]", excelCell.getAddress());
+                String msg = ann.message().replace("{address}", excelCell.getAddress());
                 res.addErrorData(ExcelError.of(field, ErrorCode.DATE_PATTERN_PAST, msg, excelCell));
             }
         } catch (Exception e) {

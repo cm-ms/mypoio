@@ -21,7 +21,7 @@ public class AllowedValuesValidator implements AnnotationValidator<ExcelAllowedV
         if (!isAllowed) {
             String allowed = String.join(", ", ann.value());
             String msg = ann.message()
-                    .replace("[Address]", excelCell.getAddress())
+                    .replace("{address}", excelCell.getAddress())
                     .replace("{allowedValues}", allowed);
             res.addErrorData(ExcelError.of(field, ErrorCode.ALLOWED_VALUE, msg, excelCell));
         }

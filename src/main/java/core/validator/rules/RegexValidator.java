@@ -15,7 +15,7 @@ public class RegexValidator implements AnnotationValidator<ExcelRegex> {
         if (excelCell.isBlank()) return;
 
         if (excelCell.doesNotMatch(ann.value())) {
-            String msg = ann.message().replace("[Address]", excelCell.getAddress());
+            String msg = ann.message().replace("{address}", excelCell.getAddress());
             res.addErrorData(ExcelError.of(field, ErrorCode.REGEX, msg, excelCell));
         }
     }

@@ -17,7 +17,7 @@ public class SizeValidator implements AnnotationValidator<ExcelSize> {
         int length = excelCell.valueLength();
         if (length < ann.min() || length > ann.max()) {
             String msg = ann.message()
-                    .replace("[Address]", excelCell.getAddress())
+                    .replace("{address}", excelCell.getAddress())
                     .replace("{min}", String.valueOf(ann.min()))
                     .replace("{max}", String.valueOf(ann.max()));
             res.addErrorData(ExcelError.of(field, ErrorCode.SIZE, msg, excelCell));
