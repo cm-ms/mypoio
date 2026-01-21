@@ -15,6 +15,7 @@ public class ExcelResult<T> {
     private List<ExcelResultItem<T>> rows;
     private List<ExcelError> generalErrors;
     private long errorCount;
+    private long numberOfRows;
 
     /**
      * Constructs an empty ExcelResult with no rows and no general errors.
@@ -23,6 +24,7 @@ public class ExcelResult<T> {
         this.rows = new ArrayList<>();
         this.generalErrors = new ArrayList<>();
         this.errorCount = 0L;
+        this.numberOfRows = 0L;
     }
 
     /**
@@ -46,6 +48,7 @@ public class ExcelResult<T> {
         if (Objects.nonNull(item)) {
             rows.add(item);
             errorCount += item.getErrors().size();
+            numberOfRows += 1;
         }
     }
 
@@ -134,4 +137,7 @@ public class ExcelResult<T> {
         return errorCount;
     }
 
+    public long getNumberOfRows() {
+        return numberOfRows;
+    }
 }

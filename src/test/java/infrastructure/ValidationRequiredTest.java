@@ -26,10 +26,10 @@ public class ValidationRequiredTest {
 
         Assertions.assertNotNull(result);
         Assertions.assertTrue(result.hasErrors());
-        Assertions.assertEquals(2, result.errorSize());
+        Assertions.assertEquals(2, result.getErrorCount());
 
-        var error1 = result.getErrors().get(0);
-        var error2 = result.getErrors().get(1);
+        var error1 = result.getRowErrors().get(0);
+        var error2 = result.getRowErrors().get(1);
 
         Assertions.assertEquals(
                 defaultRequiredMessage(error1.getAddress()),
@@ -48,7 +48,7 @@ public class ValidationRequiredTest {
 
         Assertions.assertNotNull(result);
         Assertions.assertTrue(result.hasErrors());
-        Assertions.assertEquals(7, result.errorSize());
+        Assertions.assertEquals(7, result.getErrorCount());
 
         var errB3 = getExcelError(result, "B3");
         var errB5 = getExcelError(result, "B5");
@@ -100,7 +100,7 @@ public class ValidationRequiredTest {
 
     private static void assertErrorCodeCount(ExcelResult<?> result) {
         Map<String, Long> countByErrorCode =
-                result.getErrors().stream()
+                result.getRowErrors().stream()
                         .collect(Collectors.groupingBy(
                                 ExcelError::getErrorCode,
                                 Collectors.counting()

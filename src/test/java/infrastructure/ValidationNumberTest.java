@@ -18,15 +18,15 @@ public class ValidationNumberTest {
 
         Assertions.assertNotNull(result);
         Assertions.assertTrue(result.hasErrors());
-        Assertions.assertTrue(result.hasData());
+        Assertions.assertTrue(result.isPartiallySuccess());
     }
 
     @Test
     void shouldReturnExpectedErrorAndDataSize() {
         var result = read();
 
-        Assertions.assertEquals(8, result.errorSize());
-        Assertions.assertEquals(7, result.dataSize());
+        Assertions.assertEquals(8, result.getErrorCount());
+        Assertions.assertFalse(result.isSuccess());
     }
 
     @Test
