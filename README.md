@@ -32,7 +32,7 @@ MyPoio cooks it for you. It takes the "raw" POI and serves you clean, validated,
 <dependency>
   <groupId>io.github.cm-ms</groupId>
   <artifactId>mypoio</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 </dependency>
 ```
 
@@ -70,15 +70,15 @@ public class MyController {
     public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
         try (InputStream is = file.getInputStream()) {
 
-            ExcelReader<EmployeeDto> reader = new ExcelReader<>(EmployeeDto.class);
+            ExcelReader<EmployeeDto> reader = new ExcelReader<>(EmployeeDto.class, 1); // 1 (starts reading data from the second row)
 
             ExcelResult<EmployeeDto> result = reader.initRead(is);
 
             if (result.hasErrors()) {
-                return ResponseEntity.badRequest().body(result.getErrors());
+                return ResponseEntity.badRequest().body(result.getRowErrors());
             }
 
-            return ResponseEntity.ok(result.getData());
+            return ResponseEntity.ok(result.getValidData());
 
         } catch (Exception e) {
             return ResponseEntity.internalServerError()
@@ -106,15 +106,28 @@ public @interface ExcelCpf {
 public class CpfValidator implements AnnotationValidator<ExcelCpf> {
 
     @Override
-    public void validate(ExcelAllowedValues ann, Field field, ExcelCell excelCell, ExcelResult<?> res) {
+    public void validate(ExcelDocumentoBR annotation, ExcelCell excelCell, List<ExcelError> errorList) {
         if (excelCell.isBlank()) return;
 
         if (!isValidCpf(excelCell.getValue())) {
-            res.addErrorData(ExcelError.of(field, ErrorCode.of("DOCUMENT"), msg, excelCell));
+            errorList.add(ExcelError.of(ErrorCode.of("INVALID_DOCUMENT"), msg, excelCell.getAddress()));
         }
     }
 }
 ```
+
+```java
+// 1. Define the class mapping
+var reader = new ExcelReader<>(PersonCustomValidation.class, 1);
+
+// 2. Register custom rules (Annotation -> Validator)
+reader.registerValidator(ExcelCpf.class, new CpfValidator());
+
+// 3. Process the file
+var response = reader.initRead(source);
+```
+
+
 ---
 ## Annotation Processing Rules
 
