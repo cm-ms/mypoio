@@ -16,13 +16,13 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReflectionExcelMapper<T> implements ExcelMapper<T> {
+public class ReflectionExcelMapperDefault<T> implements ExcelMapper<T> {
     private final int startRow;
     private final ExcelSource source;
     private final Class<T> clazz;
     private final ValidationEngine validationEngine;
 
-    public ReflectionExcelMapper(int startRow, ExcelSource source, Class<T> clazz, ValidationEngine validationEngine) {
+    public ReflectionExcelMapperDefault(int startRow, ExcelSource source, Class<T> clazz, ValidationEngine validationEngine) {
         this.startRow = startRow;
         this.source = source;
         this.clazz = clazz;
