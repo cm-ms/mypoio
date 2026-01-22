@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelPatternDate {
     String value() default "dd/MM/yyyy";
-    String message() default "[Address] - A data deve estar no formato {pattern}.";
+    String message() default "{address} - The date must be in the {pattern} format.";
 }

@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelEmail {
     String regex() default "^[\\w-\\.]+@([\\w-]+\\.)+[\\w-]{2,4}$";
-    String message() default "[Address] - O e-mail informado é inválido.";
+    String message() default "{address} - The provided email address is invalid.";
 }

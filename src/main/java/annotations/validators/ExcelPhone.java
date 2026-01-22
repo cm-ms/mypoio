@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelPhone {
     String regex() default "^\\(?\\d{2}\\)?\\s?\\d{4,5}-?\\d{4}$";
-    String message() default "[Address] - Formato de telefone inválido.";
+    String message() default "{address} - Invalid phone number format.";
 }

@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelRegex {
     String value();
-    String message() default "[Address] - O valor não segue o padrão esperado.";
+    String message() default "{address} - The value does not match the expected pattern.";
 }

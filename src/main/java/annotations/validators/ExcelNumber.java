@@ -11,6 +11,6 @@ public @interface ExcelNumber {
     double min() default Double.NEGATIVE_INFINITY;
     double max() default Double.POSITIVE_INFINITY;
 
-    String message() default "[Address] - O valor deve ser um número válido.";
-    String rangeMessage() default "[Address] - O valor deve estar entre {min} e {max}.";
+    String message() default "{address} - The value must be a valid number.";
+    String rangeMessage() default "{address} - The value must be between {min} and {max}.";
 }

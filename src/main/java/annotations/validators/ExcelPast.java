@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 public @interface ExcelPast {
     // A data informada no Excel seja anterior à data atual do sistema.
     String pattern() default "dd/MM/yyyy";
-    String message() default "[Address] - A data deve estar no passado.";
+    String message() default "{address} - The date must be in the past.";
 }
