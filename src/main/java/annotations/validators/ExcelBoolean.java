@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 public @interface ExcelBoolean {
     String[] trueValues() default {"true", "1", "sim", "s", "yes", "y"};
     String[] falseValues() default {"false", "0", "não", "n", "no"};
-    String message() default "[Address] - Valor inválido para campo booleano.";
+    String message() default "{address} - Invalid value for boolean field.";
 }

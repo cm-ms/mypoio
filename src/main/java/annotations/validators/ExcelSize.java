@@ -10,5 +10,5 @@ import java.lang.annotation.Target;
 public @interface ExcelSize {
     int min() default 0; // Opcional, por padrão aceita qualquer tamanho >= 0
     int max() default Integer.MAX_VALUE;
-    String message() default "[Address] - O tamanho deve estar entre {min} e {max} caracteres.";
+    String message() default "{address}- The length must be between {min} and {max} characters.";
 }

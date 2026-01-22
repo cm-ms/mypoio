@@ -9,5 +9,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelAllowedValues {
     String[] value();
-    String message() default "[Address] - Valor não permitido. Use: {allowedValues}.";
+    String message() default "{address} - Value not allowed. Use: {allowedValues}.";
 }
