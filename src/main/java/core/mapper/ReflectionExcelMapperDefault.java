@@ -6,10 +6,7 @@ import core.reader.ExcelRow;
 import core.reader.ExcelSheet;
 import core.reader.ExcelSource;
 import core.validator.ValidationEngine;
-import domain.ErrorCode;
-import domain.ExcelError;
-import domain.ExcelResult;
-import domain.ExcelResultItem;
+import domain.*;
 import exceptions.ExcelPipelineException;
 
 import java.lang.reflect.Field;
@@ -22,6 +19,7 @@ public class ReflectionExcelMapperDefault<T> implements ExcelMapper<T> {
     private final Class<T> clazz;
     private final ValidationEngine validationEngine;
 
+
     public ReflectionExcelMapperDefault(int startRow, ExcelSource source, Class<T> clazz, ValidationEngine validationEngine) {
         this.startRow = startRow;
         this.source = source;
@@ -33,38 +31,20 @@ public class ReflectionExcelMapperDefault<T> implements ExcelMapper<T> {
         ExcelResult<T> excelResult = new ExcelResult<>();
 
         ExcelSheet sheet = source.readSheet(clazz);
-
-        Field[] fields = clazz.getDeclaredFields();
-
-        for (Field f : fields) {
-            f.setAccessible(true);
-        }
+        // faz o mapeamento antes, isso evita repetição de busca de metadados
+        List<MappedField> mappedFields = prepareMetadata();
 
         for (int i = startRow; i <= sheet.getLastRowNum(); i++) {
             try {
-                List<ExcelError> errors = new ArrayList<>();
                 ExcelRow excelRow = sheet.getExcelRow(i);
 
                 if (excelRow.rowIsNullOrEmpty()) {
                     continue;
                 }
 
-                T object = createInstance(clazz);
+                List<ExcelError> errors = new ArrayList<>();
 
-                for (Field field : fields) {
-                    ExcelColumn excelColumn = field.getAnnotation(ExcelColumn.class);
-
-                    if (excelColumn == null) {
-                        continue;
-                    }
-
-                    ExcelCell excelCell = excelRow.getExcelCell(excelColumn.index());
-                    field.set(object, excelCell.getValue());
-
-                    if (this.validationEngine != null) {
-                        this.validationEngine.validate(field, excelCell, errors);
-                    }
-                }
+                T object = mapRowToInstance(excelRow, mappedFields, errors);
                 excelResult.addRow(new ExcelResultItem<>(object, i, errors));
             } catch (Exception e) {
                 excelResult.addGeneralError(
@@ -74,6 +54,46 @@ public class ReflectionExcelMapperDefault<T> implements ExcelMapper<T> {
         }
 
         return excelResult;
+    }
+
+    private T mapRowToInstance(ExcelRow excelRow, List<MappedField> mappedFields, List<ExcelError> errors) throws Exception {
+        T object = createInstance(clazz);
+
+        for (MappedField mappedField : mappedFields) {
+
+            ExcelColumn excelColumn = mappedField.getExcelColumn();
+            Field field = mappedField.getField();
+
+            ExcelCell excelCell = excelRow.getExcelCell(excelColumn.index());
+            field.set(object, excelCell.getValue());
+
+            if (this.validationEngine != null) {
+                this.validationEngine.validate(field, excelCell, errors);
+            }
+        }
+        return object;
+    }
+
+    private List<MappedField> prepareMetadata() {
+        List<MappedField> mappedFields = new ArrayList<>();
+
+        for (Field f : clazz.getDeclaredFields()) {
+            ExcelColumn ann = f.getAnnotation(ExcelColumn.class);
+
+            if (ann != null) {
+                if (!f.getType().equals(String.class)) {
+                    throw new ExcelPipelineException(String.format(
+                            "Invalid field type: '%s' in class '%s' must be a String. " +
+                                    "Currently, MyPoio only supports String mapping.",
+                            f.getName(), clazz.getSimpleName()
+                    ));
+                }
+
+                f.setAccessible(true);
+                mappedFields.add(new MappedField(f, ann));
+            }
+        }
+        return mappedFields;
     }
 
 
