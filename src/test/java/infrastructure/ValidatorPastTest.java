@@ -1,8 +1,7 @@
 package infrastructure;
 
-import core.ExcelReader;
-import domain.ErrorCode;
-import dtos.PersonFutureDateTestModel;
+import mypoio.ExcelReader;
+import mypoio.domain.ErrorCode;
 import dtos.PersonPastDateTestModel;
 import helper.HelperTest;
 import org.junit.jupiter.api.Assertions;

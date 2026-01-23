@@ -1,8 +1,8 @@
 package dtos;
 
-import annotations.ExcelColumn;
-import annotations.ExcelModel;
-import annotations.validators.ExcelRequired;
+import mypoio.annotations.ExcelColumn;
+import mypoio.annotations.ExcelModel;
+import mypoio.annotations.constraints.ExcelRequired;
 
 @ExcelModel(index = 0)
 public class PersonRequiredTestModel {

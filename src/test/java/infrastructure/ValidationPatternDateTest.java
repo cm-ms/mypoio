@@ -1,11 +1,7 @@
 package infrastructure;
 
-import annotations.ExcelColumn;
-import annotations.ExcelModel;
-import annotations.validators.ExcelPatternDate;
-import core.ExcelReader;
-import domain.ErrorCode;
-import dtos.PersonFutureDateTestModel;
+import mypoio.ExcelReader;
+import mypoio.domain.ErrorCode;
 import dtos.PersonPatternDateTestModel;
 import helper.HelperTest;
 import org.junit.jupiter.api.Assertions;

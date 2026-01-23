@@ -1,8 +1,8 @@
 package dtos;
 
-import annotations.ExcelColumn;
-import annotations.ExcelModel;
-import annotations.validators.ExcelSize;
+import mypoio.annotations.ExcelColumn;
+import mypoio.annotations.ExcelModel;
+import mypoio.annotations.constraints.ExcelSize;
 
 @ExcelModel(index = 0)
 public class PersonSizeTestModel {

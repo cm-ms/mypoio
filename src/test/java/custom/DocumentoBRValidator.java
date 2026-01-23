@@ -1,13 +1,18 @@
 package custom;
 
-import core.reader.ExcelCell;
-import core.validator.AnnotationValidator;
-import domain.ErrorCode;
-import domain.ExcelError;
+import mypoio.core.reader.ExcelCell;
+import mypoio.core.validators.AnnotationValidator;
+import mypoio.domain.ErrorCode;
+import mypoio.domain.ExcelError;
 
 import java.util.List;
 
 public class DocumentoBRValidator implements AnnotationValidator<ExcelDocumentoBR> {
+
+    @Override
+    public Class<ExcelDocumentoBR> supports() {
+        return ExcelDocumentoBR.class;
+    }
 
     @Override
     public void validate(ExcelDocumentoBR annotation, ExcelCell excelCell, List<ExcelError> errorList) {
@@ -34,7 +39,7 @@ public class DocumentoBRValidator implements AnnotationValidator<ExcelDocumentoB
     }
 
     private void reportError(ExcelDocumentoBR ann, ExcelCell dr, List<ExcelError> res) {
-        String msg = ann.message().replace("[Address]", dr.getAddress());
+        String msg = ann.message().replace("{address}", dr.getAddress());
         res.add(ExcelError.of(ErrorCode.of("INVALID_DOCUMENT"), msg, dr.getAddress()));
     }
 

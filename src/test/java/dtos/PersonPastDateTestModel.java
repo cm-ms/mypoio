@@ -1,9 +1,8 @@
 package dtos;
 
-import annotations.ExcelColumn;
-import annotations.ExcelModel;
-import annotations.validators.ExcelFuture;
-import annotations.validators.ExcelPast;
+import mypoio.annotations.ExcelColumn;
+import mypoio.annotations.ExcelModel;
+import mypoio.annotations.constraints.ExcelPast;
 
 @ExcelModel(index = 0)
 public class PersonPastDateTestModel {

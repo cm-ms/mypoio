@@ -1,7 +1,7 @@
 package infrastructure;
 
-import core.ExcelReader;
-import domain.ErrorCode;
+import mypoio.ExcelReader;
+import mypoio.domain.ErrorCode;
 import dtos.PersonAllowedValuesTestModel;
 import helper.HelperTest;
 import org.junit.jupiter.api.Assertions;

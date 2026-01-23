@@ -1,8 +1,6 @@
 package infrastructure;
 
-import core.ExcelReader;
-import custom.DocumentoBRValidator;
-import custom.ExcelDocumentoBR;
+import mypoio.ExcelReader;
 import dtos.PersonCustomValidation;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -13,8 +11,8 @@ public class ExcelCustomValidationTest {
 
     @Test
     void shouldReturnErrorsWhenCustomValidationFails() {
+
         var reader = new ExcelReader<>(PersonCustomValidation.class, 1);
-        reader.registerRules(ExcelDocumentoBR.class, new DocumentoBRValidator());
 
         var response = reader.initRead(SOURCE);
 
