@@ -1,7 +1,7 @@
 package helper;
 
-import domain.ExcelError;
-import domain.ExcelResult;
+import mypoio.domain.ExcelError;
+import mypoio.domain.ExcelResult;
 
 import java.util.List;
 import java.util.Map;

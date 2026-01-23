@@ -1,8 +1,8 @@
 package dtos;
 
-import annotations.ExcelColumn;
-import annotations.ExcelModel;
-import annotations.validators.ExcelRequired;
+import mypoio.annotations.ExcelColumn;
+import mypoio.annotations.ExcelModel;
+import mypoio.annotations.constraints.ExcelRequired;
 import custom.ExcelDocumentoBR;
 
 @ExcelModel(index = 0)

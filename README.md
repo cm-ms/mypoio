@@ -63,28 +63,30 @@ public class EmployeeDto {
 ### 2. Read the File
 
 ```java
+import mypoio.ExcelReader;
+
 @RestController
 @RequestMapping
 public class MyController {
-    @PostMapping("/upload")
-    public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
-        try (InputStream is = file.getInputStream()) {
+  @PostMapping("/upload")
+  public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
+    try (InputStream is = file.getInputStream()) {
 
-            ExcelReader<EmployeeDto> reader = new ExcelReader<>(EmployeeDto.class, 1); // 1 (starts reading data from the second row)
+      ExcelReader<EmployeeDto> reader = new ExcelReader<>(EmployeeDto.class, 1); // 1 (starts reading data from the second row)
 
-            ExcelResult<EmployeeDto> result = reader.initRead(is);
+      ExcelResult<EmployeeDto> result = reader.initRead(is);
 
-            if (result.hasErrors()) {
-                return ResponseEntity.badRequest().body(result.getRowErrors());
-            }
+      if (result.hasErrors()) {
+        return ResponseEntity.badRequest().body(result.getRowErrors());
+      }
 
-            return ResponseEntity.ok(result.getValidData());
+      return ResponseEntity.ok(result.getValidData());
 
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Erro ao processar o arquivo: " + e.getMessage());
-        }
+    } catch (Exception e) {
+      return ResponseEntity.internalServerError()
+              .body("Erro ao processar o arquivo: " + e.getMessage());
     }
+  }
 }
 ```
 
@@ -117,14 +119,18 @@ public class CpfValidator implements AnnotationValidator<ExcelCpf> {
 ```
 
 ```java
+import mypoio.ExcelReader;
+
 // 1. Define the class mapping
 var reader = new ExcelReader<>(PersonCustomValidation.class, 1);
 
 // 2. Register custom rules (Annotation -> Validator)
-reader.registerValidator(ExcelCpf.class, new CpfValidator());
+reader.
 
-// 3. Process the file
-var response = reader.initRead(source);
+        registerValidator(ExcelCpf .class, new CpfValidator());
+
+        // 3. Process the file
+        var response = reader.initRead(source);
 ```
 
 

@@ -1,11 +1,11 @@
 package infrastructure;
 
-import annotations.validators.ExcelNumber;
-import annotations.validators.ExcelRequired;
-import core.ExcelReader;
-import domain.ErrorCode;
-import domain.ExcelError;
-import domain.ExcelResult;
+import mypoio.annotations.constraints.ExcelNumber;
+import mypoio.annotations.constraints.ExcelRequired;
+import mypoio.ExcelReader;
+import mypoio.domain.ErrorCode;
+import mypoio.domain.ExcelError;
+import mypoio.domain.ExcelResult;
 import dtos.PersonRequiredHasPriorityTestModel;
 import dtos.PersonRequiredTestModel;
 import org.junit.jupiter.api.Assertions;

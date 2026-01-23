@@ -1,8 +1,8 @@
 package infrastructure;
 
-import core.ExcelReader;
-import domain.ErrorCode;
-import domain.ExcelResult;
+import mypoio.ExcelReader;
+import mypoio.domain.ErrorCode;
+import mypoio.domain.ExcelResult;
 import dtos.PersonNumberValidationScenariosTestModel;
 import helper.HelperTest;
 import org.junit.jupiter.api.Assertions;
