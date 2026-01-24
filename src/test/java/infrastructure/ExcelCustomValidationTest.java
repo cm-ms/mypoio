@@ -2,6 +2,7 @@ package infrastructure;
 
 import mypoio.ExcelReader;
 import dtos.PersonCustomValidation;
+import mypoio.domain.ExcelResultItem;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -11,6 +12,9 @@ public class ExcelCustomValidationTest {
 
     @Test
     void shouldReturnErrorsWhenCustomValidationFails() {
+
+
+
 
         var reader = new ExcelReader<>(PersonCustomValidation.class, 1);
 

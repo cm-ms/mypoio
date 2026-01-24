@@ -6,15 +6,14 @@ import mypoio.core.reader.ExcelRow;
 import mypoio.core.reader.ExcelSheet;
 import mypoio.core.reader.ExcelSource;
 import mypoio.core.validators.ValidationEngine;
-import mypoio.domain.ErrorCode;
 import mypoio.domain.ExcelError;
-import mypoio.domain.ExcelResult;
 import mypoio.domain.ExcelResultItem;
 import mypoio.exceptions.ExcelPipelineException;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class ExcelMapperImpl<T> implements ExcelMapper<T> {
     private final int startRow;
@@ -29,12 +28,18 @@ public class ExcelMapperImpl<T> implements ExcelMapper<T> {
         this.skipValidation = skipValidation;
     }
 
-    public ExcelResult<T> mapperData() {
-        ExcelResult<T> excelResult = new ExcelResult<>();
+    @Override
+    public void mapperData(int chunkSize, Consumer<List<ExcelResultItem<T>>> chunkConsumer) {
+        process(chunkSize, chunkConsumer);
+    }
 
+    private void process(int chunkSize, Consumer<List<ExcelResultItem<T>>> chunkConsumer) {
         ExcelSheet sheet = source.readSheet(clazz);
-        // faz o mapeamento antes, isso evita repetição de busca de metadados
         List<MappedField> mappedFields = prepareMetadata();
+
+        int totalRows = sheet.getLastRowNum() - startRow + 1;
+        int initialCapacity = Math.min(chunkSize, Math.max(totalRows, 1000));
+        List<ExcelResultItem<T>> currentChunk = new ArrayList<>(initialCapacity);
 
         for (int i = startRow; i <= sheet.getLastRowNum(); i++) {
             try {
@@ -47,15 +52,24 @@ public class ExcelMapperImpl<T> implements ExcelMapper<T> {
                 List<ExcelError> errors = new ArrayList<>();
 
                 T object = mapRowToInstance(excelRow, mappedFields, errors);
-                excelResult.addRow(new ExcelResultItem<>(object, i, errors));
+                currentChunk.add(new ExcelResultItem<>(object, i, errors));
+
+                if (currentChunk.size() >= chunkSize) {
+                    chunkConsumer.accept(currentChunk);
+                    currentChunk.clear();
+                }
             } catch (Exception e) {
-                excelResult.addGeneralError(
-                        ExcelError.of(ErrorCode.UNKNOWN, "Unexpected failure while processing line: " + e.getMessage())
-                );
+                if (!currentChunk.isEmpty()) {
+                    chunkConsumer.accept(currentChunk);
+                }
+                throw new ExcelPipelineException("Unexpected failure while processing line: " + e.getMessage());
             }
         }
 
-        return excelResult;
+        if (!currentChunk.isEmpty()) {
+            chunkConsumer.accept(currentChunk);
+        }
+
     }
 
     private T mapRowToInstance(ExcelRow excelRow, List<MappedField> mappedFields, List<ExcelError> errors) throws Exception {
@@ -73,6 +87,7 @@ public class ExcelMapperImpl<T> implements ExcelMapper<T> {
                 ValidationEngine.validate(mappedField, excelCell, errors);
             }
         }
+
         return object;
     }
 
@@ -106,4 +121,6 @@ public class ExcelMapperImpl<T> implements ExcelMapper<T> {
             throw new ExcelPipelineException("The class " + clazz.getSimpleName() + " needs a public constructor with no arguments.");
         }
     }
+
+
 }

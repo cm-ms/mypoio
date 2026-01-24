@@ -6,9 +6,12 @@ import mypoio.core.mapper.factory.ExcelMapperFactoryDefault;
 import mypoio.core.reader.ExcelSource;
 import mypoio.core.reader.ExcelSourceFactory;
 import mypoio.domain.ExcelResult;
+import mypoio.domain.ExcelResultItem;
 import mypoio.infrastructure.poi.ExcelSourceFactoryPoiDefault;
 
 import java.io.InputStream;
+import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Main entry point of the MyPoio library for reading and processing spreadsheets.
@@ -32,17 +35,29 @@ import java.io.InputStream;
  *         .skipValidation()
  *         .initRead(inputStream);
  *
- * // Registering a user-provided validator mapped to a custom annotation
- * ExcelResult<Person> result = new core.ExcelReader<>(Person.class)
- *         .registerRules(MyAnnotation.class, new MyAnnotationValidator())
- *         .initRead("data.xlsx");
+ * // Streaming read using chunked processing, ideal for large files
+ * // Rows are processed in batches and delivered incrementally
+ * // allowing persistence or further processing per chunk
+ *
+ * new ExcelReader<>(PersonCustomValidation.class)
+ *     .offsetRow(2) // defines the starting row for reading
+ *     .withChunkSize(500) // processes data in chunks of 500
+ *     .skipValidation()   // skips validations if desired
+ *     .initRead(SOURCE, chunk -> {
+ *         // called every 500 rows
+ *         personRepository.saveAll(
+ *             chunk.stream().flatMap(ExcelResultItem::getData)
+ *         );
+ *     });
+ *
  * }</pre>
  */
 public final class ExcelReader<T> {
 
     private final Class<T> clazz;
-    private final int startRow;
+    private int offsetRow;
     private boolean skipValidation;
+    private int chunkSize = Integer.MAX_VALUE;
 
     private ExcelSourceFactory excelSourceFactory;
     private ExcelMapperFactory mapperFactory;
@@ -56,11 +71,11 @@ public final class ExcelReader<T> {
 
     /**
      * @param clazz    Classe de destino.
-     * @param startRow Índice da linha inicial.
+     * @param offsetRow Índice da linha inicial.
      */
-    public ExcelReader(Class<T> clazz, int startRow) {
+    public ExcelReader(Class<T> clazz, int offsetRow) {
         this.clazz = clazz;
-        this.startRow = startRow;
+        this.offsetRow = offsetRow;
         this.skipValidation = false;
         this.excelSourceFactory = new ExcelSourceFactoryPoiDefault();
         this.mapperFactory = new ExcelMapperFactoryDefault();
@@ -69,6 +84,58 @@ public final class ExcelReader<T> {
     public ExcelReader<T> skipValidation() {
         this.skipValidation = true;
         return this;
+    }
+
+    public ExcelReader<T> offsetRow(int startRow) {
+        this.offsetRow = startRow;
+        return this;
+    }
+
+    public ExcelReader<T> withChunkSize(int chunkSize) {
+        this.chunkSize = chunkSize;
+        return this;
+    }
+
+    public ExcelReader<T> withMapperFactory(ExcelMapperFactory mapperFactory) {
+        this.mapperFactory = mapperFactory;
+        return this;
+    }
+
+
+    public ExcelResult<T> initRead(String sourceFile) {
+        ExcelResult<T> result = new ExcelResult<>();
+        try (ExcelSource excelSource = excelSourceFactory.create(sourceFile)) {
+            resolveMapper(excelSource)
+                    .mapperData(this.chunkSize, chunk -> chunk.forEach(result::addRow));
+        }
+        return result;
+    }
+
+    public void initRead(String sourceFile, Consumer<List<ExcelResultItem<T>>> chunkConsumer) {
+        try (ExcelSource excelSource = excelSourceFactory.create(sourceFile)) {
+            resolveMapper(excelSource)
+                    .mapperData(this.chunkSize, chunkConsumer);
+        }
+    }
+
+    public ExcelResult<T> initRead(InputStream is) {
+        ExcelResult<T> result = new ExcelResult<>();
+        try (ExcelSource source = excelSourceFactory.create(is)) {
+            resolveMapper(source)
+                    .mapperData(this.chunkSize, chunk -> chunk.forEach(result::addRow));
+        }
+        return result;
+    }
+
+    public void initRead(InputStream is, Consumer<List<ExcelResultItem<T>>> chunkConsumer) {
+        try (ExcelSource source = excelSourceFactory.create(is)) {
+            resolveMapper(source)
+                    .mapperData(this.chunkSize, chunkConsumer);
+        }
+    }
+
+    private ExcelMapper<T> resolveMapper(ExcelSource excelSource) {
+        return mapperFactory.create(offsetRow, excelSource, clazz, skipValidation);
     }
 
     /**
@@ -97,37 +164,5 @@ public final class ExcelReader<T> {
     public ExcelReader<T> withSource(ExcelSourceFactory factory) {
         this.excelSourceFactory = factory;
         return this;
-    }
-
-    public ExcelReader<T> withMapperFactory(ExcelMapperFactory mapperFactory) {
-        this.mapperFactory = mapperFactory;
-        return this;
-    }
-
-
-    /**
-     * Executa o processamento a partir de um arquivo físico.
-     */
-    public ExcelResult<T> initRead(String sourceFile) {
-        try (ExcelSource excelSource = excelSourceFactory.create(sourceFile)) {
-            return process(excelSource);
-        }
-    }
-
-    /**
-     * Executa o processamento a partir de um stream de dados.
-     */
-    public ExcelResult<T> initRead(InputStream inputStream) {
-        try (ExcelSource excelSource = excelSourceFactory.create(inputStream)) {
-            return process(excelSource);
-        }
-    }
-
-    private ExcelResult<T> process(ExcelSource source) {
-        return resolveMapper(source).mapperData();
-    }
-
-    private ExcelMapper<T> resolveMapper(ExcelSource excelSource) {
-        return mapperFactory.create(startRow, excelSource, clazz, skipValidation);
     }
 }
