@@ -14,14 +14,7 @@ public class ExcelCustomValidationTest {
     void shouldReturnErrorsWhenCustomValidationFails() {
 
 
-        new ExcelReader<>(PersonCustomValidation.class)
-                .fromRow(2) // define a linha inicial de leitura
-                .withChunkSize(500) // Processa de 500 em 500
-                .skipValidation()   // Caso queira skipar as validações
-                .initRead(SOURCE, chunk -> {
-                    // a cada 500 linhas é chamado o
-                    personRepository.saveAll(chunk.stream().flatMap(ExcelResultItem::getData));
-                });
+
 
         var reader = new ExcelReader<>(PersonCustomValidation.class, 1);
 

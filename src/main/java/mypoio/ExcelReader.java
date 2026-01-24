@@ -40,7 +40,7 @@ import java.util.function.Consumer;
  * // allowing persistence or further processing per chunk
  *
  * new ExcelReader<>(PersonCustomValidation.class)
- *     .fromRow(2) // defines the starting row for reading
+ *     .offsetRow(2) // defines the starting row for reading
  *     .withChunkSize(500) // processes data in chunks of 500
  *     .skipValidation()   // skips validations if desired
  *     .initRead(SOURCE, chunk -> {
@@ -55,7 +55,7 @@ import java.util.function.Consumer;
 public final class ExcelReader<T> {
 
     private final Class<T> clazz;
-    private int startRow;
+    private int offsetRow;
     private boolean skipValidation;
     private int chunkSize = Integer.MAX_VALUE;
 
@@ -71,11 +71,11 @@ public final class ExcelReader<T> {
 
     /**
      * @param clazz    Classe de destino.
-     * @param startRow Índice da linha inicial.
+     * @param offsetRow Índice da linha inicial.
      */
-    public ExcelReader(Class<T> clazz, int startRow) {
+    public ExcelReader(Class<T> clazz, int offsetRow) {
         this.clazz = clazz;
-        this.startRow = startRow;
+        this.offsetRow = offsetRow;
         this.skipValidation = false;
         this.excelSourceFactory = new ExcelSourceFactoryPoiDefault();
         this.mapperFactory = new ExcelMapperFactoryDefault();
@@ -86,8 +86,8 @@ public final class ExcelReader<T> {
         return this;
     }
 
-    public ExcelReader<T> fromRow(int startRow) {
-        this.startRow = startRow;
+    public ExcelReader<T> offsetRow(int startRow) {
+        this.offsetRow = startRow;
         return this;
     }
 
@@ -135,7 +135,7 @@ public final class ExcelReader<T> {
     }
 
     private ExcelMapper<T> resolveMapper(ExcelSource excelSource) {
-        return mapperFactory.create(startRow, excelSource, clazz, skipValidation);
+        return mapperFactory.create(offsetRow, excelSource, clazz, skipValidation);
     }
 
     /**
