@@ -12,7 +12,7 @@ public class ValidationAllowedValuesTest {
 
     @Test
     void shouldReturnErrorWhenValueIsNotInAllowedValues() {
-        var result = new ExcelReader<>(PersonAllowedValuesTestModel.class, 1)
+        var result = new ExcelReader<>(PersonAllowedValuesTestModel.class)
                 .initRead(SOURCE);
 
         var error = HelperTest.getExcelError(result, "D6");

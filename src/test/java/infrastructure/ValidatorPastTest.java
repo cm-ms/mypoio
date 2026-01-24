@@ -13,7 +13,7 @@ public class ValidatorPastTest {
 
     @Test
     void shouldReturnErrorWhenDateIsInTheFuture() {
-        var result = new ExcelReader<>(PersonPastDateTestModel.class, 1)
+        var result = new ExcelReader<>(PersonPastDateTestModel.class)
                 .initRead(SOURCE);
 
         var error = HelperTest.getExcelError(result, "F4");

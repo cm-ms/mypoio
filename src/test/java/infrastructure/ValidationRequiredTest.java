@@ -1,8 +1,8 @@
 package infrastructure;
 
+import mypoio.ExcelReader;
 import mypoio.annotations.constraints.ExcelNumber;
 import mypoio.annotations.constraints.ExcelRequired;
-import mypoio.ExcelReader;
 import mypoio.domain.ErrorCode;
 import mypoio.domain.ExcelError;
 import mypoio.domain.ExcelResult;
@@ -71,7 +71,7 @@ public class ValidationRequiredTest {
     // ===== Helpers =====
 
     private static ExcelResult<?> read(Class<?> model) {
-        return new ExcelReader<>(model, 1).initRead(SOURCE);
+        return new ExcelReader<>(model).initRead(SOURCE);
     }
 
     private static String defaultRequiredMessage(String address) throws NoSuchMethodException {

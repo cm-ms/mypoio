@@ -13,7 +13,7 @@ public class ValidationNumberTest {
 
     @Test
     void shouldReadDataAndReturnErrors() {
-        var result = new ExcelReader<>(PersonNumberValidationScenariosTestModel.class, 1)
+        var result = new ExcelReader<>(PersonNumberValidationScenariosTestModel.class)
                 .initRead(SOURCE);
 
         Assertions.assertNotNull(result);
@@ -61,7 +61,7 @@ public class ValidationNumberTest {
 
 
     private ExcelResult<?> read() {
-        return new ExcelReader<>(PersonNumberValidationScenariosTestModel.class, 1)
+        return new ExcelReader<>(PersonNumberValidationScenariosTestModel.class)
                 .initRead(SOURCE);
     }
 }

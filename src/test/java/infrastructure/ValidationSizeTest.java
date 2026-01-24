@@ -11,7 +11,7 @@ public class ValidationSizeTest {
 
     @Test
     void shouldReturnErrorWhenValueIsNotInAllowedValues() {
-        var result = new ExcelReader<>(PersonSizeTestModel.class, 1)
+        var result = new ExcelReader<>(PersonSizeTestModel.class)
                 .initRead(SOURCE);
 
         Assertions.assertFalse(result.getRows().isEmpty());

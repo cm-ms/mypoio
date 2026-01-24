@@ -12,7 +12,7 @@ public class ValidationEmailTest {
 
     @Test
     void shouldReturnErrorForInvalidEmail() {
-        var result = new ExcelReader<>(PersonEmailTestModel.class, 1)
+        var result = new ExcelReader<>(PersonEmailTestModel.class)
                 .initRead(SOURCE);
 
         var error = HelperTest.getExcelError(result, "E7");

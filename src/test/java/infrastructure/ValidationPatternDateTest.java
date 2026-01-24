@@ -13,7 +13,7 @@ public class ValidationPatternDateTest {
 
     @Test
     void shouldReturnErrorWhenDateIsNotValid() {
-        var result = new ExcelReader<>(PersonPatternDateTestModel.class, 1)
+        var result = new ExcelReader<>(PersonPatternDateTestModel.class)
                 .initRead(SOURCE);
 
         var error = HelperTest.getExcelError(result, "F6");
