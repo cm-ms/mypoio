@@ -1,6 +1,7 @@
 package mypoio.core.mapper;
 
 import mypoio.annotations.ExcelColumn;
+import mypoio.core.ExcelMappingContext;
 import mypoio.core.reader.ExcelCell;
 import mypoio.core.reader.ExcelRow;
 import mypoio.core.reader.ExcelSheet;
@@ -15,33 +16,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-public class ExcelMapperImpl<T> implements ExcelMapper<T> {
-    private final int startRow;
-    private final ExcelSource source;
-    private final Class<T> clazz;
-    private final boolean skipValidation;
-
-    public ExcelMapperImpl(int startRow, ExcelSource source, Class<T> clazz, boolean skipValidation) {
-        this.startRow = startRow;
-        this.source = source;
-        this.clazz = clazz;
-        this.skipValidation = skipValidation;
-    }
+public class ExcelMapperImpl implements ExcelMapper {
 
     @Override
-    public void mapperData(int chunkSize, Consumer<List<ExcelResultItem<T>>> chunkConsumer) {
-        process(chunkSize, chunkConsumer);
-    }
+    public <T> void mapperData(ExcelMappingContext<T> context, Consumer<List<ExcelResultItem<T>>> chunkConsumer) {
+        ExcelSource source = context.getSource();
+        Class<T> clazz = context.getClazz();
 
-    private void process(int chunkSize, Consumer<List<ExcelResultItem<T>>> chunkConsumer) {
         ExcelSheet sheet = source.readSheet(clazz);
-        List<MappedField> mappedFields = prepareMetadata();
+        List<MappedField> mappedFields = prepareMetadata(clazz);
 
-        int totalRows = sheet.getLastRowNum() - startRow + 1;
-        int initialCapacity = Math.min(chunkSize, Math.max(totalRows, 1000));
-        List<ExcelResultItem<T>> currentChunk = new ArrayList<>(initialCapacity);
+        int lastRowInSheet = sheet.getLastRowNum();
+        int start = context.getOffsetRow();
+        int end = context.calculateEndRow(lastRowInSheet);
+        int chunkSize = context.getChunkSize();
 
-        for (int i = startRow; i <= sheet.getLastRowNum(); i++) {
+        List<ExcelResultItem<T>> currentChunk = new ArrayList<>(
+                context.suggestInitialCapacity(chunkSize, lastRowInSheet)
+        );
+
+        for (int i = start; i <= end; i++) {
             try {
                 ExcelRow excelRow = sheet.getExcelRow(i);
 
@@ -51,36 +45,35 @@ public class ExcelMapperImpl<T> implements ExcelMapper<T> {
 
                 List<ExcelError> errors = new ArrayList<>();
 
-                T object = mapRowToInstance(excelRow, mappedFields, errors);
+                T object = mapRowToInstance(clazz, excelRow, mappedFields, errors, context.isSkipValidation());
                 currentChunk.add(new ExcelResultItem<>(object, i, errors));
 
                 if (currentChunk.size() >= chunkSize) {
-                    chunkConsumer.accept(currentChunk);
+                    chunkConsumer.accept(new ArrayList<>(currentChunk));
                     currentChunk.clear();
                 }
             } catch (Exception e) {
                 if (!currentChunk.isEmpty()) {
                     chunkConsumer.accept(currentChunk);
                 }
-                throw new ExcelPipelineException("Unexpected failure while processing line: " + e.getMessage());
+                throw new ExcelPipelineException("Unexpected failure while processing line " + i + ": " + e.getMessage(), e);
             }
         }
 
         if (!currentChunk.isEmpty()) {
             chunkConsumer.accept(currentChunk);
         }
-
     }
 
-    private T mapRowToInstance(ExcelRow excelRow, List<MappedField> mappedFields, List<ExcelError> errors) throws Exception {
+    private <T> T mapRowToInstance(Class<T> clazz, ExcelRow excelRow, List<MappedField> mappedFields, List<ExcelError> errors, boolean skipValidation) throws Exception {
         T object = createInstance(clazz);
 
         for (MappedField mappedField : mappedFields) {
-
             ExcelColumn excelColumn = mappedField.getExcelColumn();
             Field field = mappedField.getField();
 
             ExcelCell excelCell = excelRow.getExcelCell(excelColumn.index());
+
             field.set(object, excelCell.getValue());
 
             if (!skipValidation) {
@@ -91,7 +84,7 @@ public class ExcelMapperImpl<T> implements ExcelMapper<T> {
         return object;
     }
 
-    private List<MappedField> prepareMetadata() {
+    private <T> List<MappedField> prepareMetadata(Class<T> clazz) {
         List<MappedField> mappedFields = new ArrayList<>();
 
         for (Field f : clazz.getDeclaredFields()) {
@@ -100,8 +93,7 @@ public class ExcelMapperImpl<T> implements ExcelMapper<T> {
             if (ann != null) {
                 if (!f.getType().equals(String.class)) {
                     throw new ExcelPipelineException(String.format(
-                            "Invalid field type: '%s' in class '%s' must be a String. " +
-                                    "Currently, MyPoio only supports String mapping.",
+                            "Invalid field type: '%s' in class '%s' must be a String.",
                             f.getName(), clazz.getSimpleName()
                     ));
                 }
@@ -114,13 +106,12 @@ public class ExcelMapperImpl<T> implements ExcelMapper<T> {
     }
 
 
-    private T createInstance(Class<T> clazz) throws Exception {
+    private <T> T createInstance(Class<T> clazz) throws Exception {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException e) {
             throw new ExcelPipelineException("The class " + clazz.getSimpleName() + " needs a public constructor with no arguments.");
         }
     }
-
 
 }
