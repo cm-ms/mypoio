@@ -8,7 +8,7 @@ import mypoio.core.mapper.factory.ExcelMapperFactoryDefault;
 import mypoio.core.reader.ExcelSourceFactory;
 import mypoio.domain.ExcelResult;
 import mypoio.domain.ExcelResultItem;
-import mypoio.infrastructure.poi.ExcelSourceFactoryPoiDefault;
+import mypoio.validations.poi.ExcelSourceFactoryPoiDefault;
 
 import java.io.InputStream;
 import java.util.List;
@@ -59,7 +59,7 @@ public class ExcelReader<T> implements ExcelPipeline<T> {
     }
 
     public ExcelPipeline<T> pipeline() {
-        return this; // A partir daqui, o IDE tratará como ExcelPipeline
+        return this;
     }
 
     @Override
@@ -84,7 +84,7 @@ public class ExcelReader<T> implements ExcelPipeline<T> {
                     .collect(Collectors.toList());
 
             if (!dataOnly.isEmpty()) {
-                ((Consumer<List<T>>) (Consumer<?>) consumer).accept(dataOnly);
+                consumer.accept(dataOnly);
             }
         };
         return this;

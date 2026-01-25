@@ -16,7 +16,7 @@ public class SizeValidator implements AnnotationValidator<ExcelSize> {
 
     @Override
     public void validate(ExcelSize annotation, ExcelCell excelCell, List<ExcelError> errorList) {
-        if (excelCell.isBlank()) return;
+        //if (excelCell.isBlank()) return;
 
         int length = excelCell.valueLength();
 
