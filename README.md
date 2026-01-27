@@ -99,38 +99,35 @@ public class MyController {
 ```java
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
+@ExcelConstraint(validatedBy = DocumentoBRValidator.class)
 public @interface ExcelCpf {
     String message() default "Invalid CPF format";
 }
 ```
 
 ```java
-public class CpfValidator implements AnnotationValidator<ExcelCpf> {
+public class DocumentoBRValidator implements AnnotationValidator<ExcelDocumentoBR> {
+  public static ErrorCode DOCUMENT_ERROR_CODE_TEST = ErrorCode.of("INVALID_DOCUMENT");
 
-    @Override
-    public void validate(ExcelDocumentoBR annotation, ExcelCell excelCell, List<ExcelError> errorList) {
-        if (excelCell.isBlank()) return;
+  @Override
+  public Class<ExcelDocumentoBR> supports() {
+    return ExcelDocumentoBR.class;
+  }
 
-        if (!isValidCpf(excelCell.getValue())) {
-            errorList.add(ExcelError.of(ErrorCode.of("INVALID_DOCUMENT"), msg, excelCell.getAddress()));
-        }
-    }
+  @Override
+  public void validate(ExcelDocumentoBR annotation, ExcelCell excelCell, List<ExcelError> errorList) {
+    // logic validate
+  }
 }
 ```
 
 ```java
-
-
-// 1. Define the class mapping
-var reader = new ExcelReader<>(PersonCustomValidation.class, 1);
-
-// 2. Register custom rules (Annotation -> Validator)
-reader.
-
-        registerValidator(ExcelCpf .class, new CpfValidator());
-
-        // 3. Process the file
-        var response = reader.initRead(source);
+@ExcelModel
+public static class CustomDocument {
+  @ExcelDocumentoBR // use your annotation
+  @ExcelColumn(index = 12)
+  public String value;
+}
 ```
 
 
@@ -219,23 +216,7 @@ private String email;
 4. Ability to skip validations when needed ✅  
 5. Minimized coupling through dynamic initializers and interfaces ✅  
 6. Reduced dependency on error-return structures (cleaner result model) ✅  
-7. Decoupling from Apache POI (used as default implementation, not a hard dependency) ✅  
-
----
-
-### Planned / In Progress
-
-8. Column mapping by name (currently supported only by column index)  
-9. Type conversion after validation (String → Integer, LocalDate, Enum, etc.)  
-10. Data normalization layer  
-   - Example: `Male/Female`, `M/F`, `1/0` → single canonical representation  
-   - Especially useful for Data Warehousing and analytics use cases  
-11. Multi-sheet processing  
-   - Support reading multiple sheets (1..N) instead of a fixed sheet  
-12. Direct Excel-to-Type processing  
-   - Optional fast path that skips intermediate validation steps when desired  
-13. Cross-column validation  
-   - Example: if column A is filled, column B becomes required  
+7. Decoupling from Apache POI (used as default implementation, not a hard dependency) ✅
 
 ---
 
