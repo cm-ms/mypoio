@@ -109,7 +109,19 @@ public class MyController {
   }
 }
 ```
+#### How it Works?
 
+MyPoio processes data in a streamlined pipeline, ensuring separation of concerns between
+reading, binding, and validating.
+
+```mermaid
+graph LR
+    A[Excel Row] -->|Extraction| B[Raw Data]
+    B -->|Binding| C{Validation Engine}
+    C -->|Pass| D[Valid POJO List]
+    C -->|Fail| E[Error Report List]
+    D & E --> F[ExcelResult]
+```
 ---
 
 ## Custom Validation
@@ -167,21 +179,6 @@ public class EmployeeDto {
 ```
 
 That's it! Now just run the reader and watch the magic happen. The library automatically detects your annotation and applies your validation logic to every row.
-
-
-#### 4. How it Works?
-
-MyPoio processes data in a streamlined pipeline, ensuring separation of concerns between
-reading, binding, and validating.
-
-```mermaid
-graph LR
-    A[Excel Row] -->|Extraction| B[Raw Data]
-    B -->|Binding| C{Validation Engine}
-    C -->|Pass| D[Valid POJO List]
-    C -->|Fail| E[Error Report List]
-    D & E --> F[ExcelResult]
-```
 
 ---
 
