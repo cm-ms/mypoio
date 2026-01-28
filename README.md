@@ -38,9 +38,15 @@ MyPoio cooks it for you. It takes the "raw" POI and serves you clean, validated,
 
 ---
 
-## Usage Examples
+## How to use?
 
-### 1. Define your DTO
+Parsing Excel files is as simple as defining your data model. Just add annotations to your DTO class to bind columns and enforce constraints.
+
+1. **Annotate** your class with `@ExcelModel`.
+2. **Map** fields using `@ExcelColumn`.
+3. **Validate** the data using ready-made decorators such as @ExcelRequired or @ExcelAllowedValues, or with your own.
+
+#### Example of DTO mapping
 
 ```java
 @ExcelModel(index = 0)
@@ -58,139 +64,163 @@ public class EmployeeDto {
     @ExcelAllowedValues({"IT", "HR", "SALES"})
     private String department;
 }
+
 ```
 
-### 2. Read the File
+#### Example Usage
+
+Once your DTO is defined, use the `ExcelReader` to process the input stream.
+
+The library returns an `ExcelResult` object, which acts as a comprehensive report of the operation. Instead of halting on the first error, it captures both valid data and validation failures, giving you full control over the response.
+
+By default, the reader **skips the first row** (header). If you need to start from a different row (e.g., index 4 for files without headers), you can configure it using `.offsetRow(rowNumber)`.
+
+Here is an example using a Spring `RestController`:
 
 ```java
-
-
 @RestController
 @RequestMapping
 public class MyController {
-    @PostMapping("/upload")
-    public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
-        try (InputStream is = file.getInputStream()) {
 
-            ExcelReader<EmployeeDto> reader = new ExcelReader<>(EmployeeDto.class, 1); // 1 (starts reading data from the second row)
+  @PostMapping("/upload")
+  public ResponseEntity<?> uploadExcel(@RequestParam("file") MultipartFile file) {
+    try (InputStream is = file.getInputStream()) {
 
-            ExcelResult<EmployeeDto> result = reader.initRead(is);
+      // 1. Create the reader for your DTO.
+      // Default behavior: starts reading from row 1 (skips header).
+      ExcelReader<EmployeeDto> reader = new ExcelReader<>(EmployeeDto.class)
+              .offsetRow(4); // Optional: Customize start row if needed
 
-            if (result.hasErrors()) {
-                return ResponseEntity.badRequest().body(result.getRowErrors());
-            }
+      // 2. Process the file
+      ExcelResult<EmployeeDto> result = reader.initRead(is);
 
-            return ResponseEntity.ok(result.getValidData());
+      // 3. Handle the result
+      if (result.hasErrors()) {
+        // Return specific error messages to the client
+        return ResponseEntity.badRequest().body(result.getRowErrors());
+      }
 
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Erro ao processar o arquivo: " + e.getMessage());
-        }
+      // Return only the valid, converted objects
+      return ResponseEntity.ok(result.getValidData());
+
+    } catch (Exception e) {
+      return ResponseEntity.internalServerError().body("Error: " + e.getMessage());
     }
+  }
 }
 ```
 
 ---
 
-## Customization
+## Custom Validation
 
-### Creating a Custom Validator
+Need to validate specific formats (like documents), unique IDs, or complex business rules? The library is designed to be easily extensible.
+
+You can create your own custom annotations in just 3 steps:
+
+#### 1. Create the Annotation
+Define your annotation and link it to a validator class using `@ExcelConstraint`.
 
 ```java
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
-public @interface ExcelCpf {
-    String message() default "Invalid CPF format";
+@ExcelConstraint(validatedBy = DocumentValidator.class) // Link to your logic
+public @interface ExcelDocument {
+  String message() default "Invalid document format";
 }
 ```
 
+#### 2. Implement the Logic
+   Create a class that implements AnnotationValidator. This is where you put your validation rules.
+
 ```java
-public class CpfValidator implements AnnotationValidator<ExcelCpf> {
-
-    @Override
-    public void validate(ExcelDocumentoBR annotation, ExcelCell excelCell, List<ExcelError> errorList) {
-        if (excelCell.isBlank()) return;
-
-        if (!isValidCpf(excelCell.getValue())) {
-            errorList.add(ExcelError.of(ErrorCode.of("INVALID_DOCUMENT"), msg, excelCell.getAddress()));
-        }
-    }
+public class DocumentValidator implements AnnotationValidator<ExcelDocument> {
+  
+  @Override
+  public void validate(ExcelDocument annotation, ExcelCell excelCell, List<ExcelError> errorList) {
+      String value = excelCell.getValue();
+      
+      // Your custom logic here (e.g., check document algorithm)
+      if (!isValidDocument(value)) {
+          errorList.add(new ExcelError("INVALID_DOCUMENT", annotation.message()));
+      }
+  }
 }
 ```
 
+#### 3. Use it!
+
+Just annotate your DTO fields with your new annotation.
+
+
 ```java
+@ExcelModel
+public class EmployeeDto {
 
+  @ExcelColumn(index = 0)
+  private String name;
 
-// 1. Define the class mapping
-var reader = new ExcelReader<>(PersonCustomValidation.class, 1);
-
-// 2. Register custom rules (Annotation -> Validator)
-reader.
-
-        registerValidator(ExcelCpf .class, new CpfValidator());
-
-        // 3. Process the file
-        var response = reader.initRead(source);
+  @ExcelDocumentoBR // Your custom validation
+  @ExcelColumn(index = 1)
+  private String documentNumber;
+}
 ```
 
+That's it! Now just run the reader and watch the magic happen. The library automatically detects your annotation and applies your validation logic to every row.
 
 ---
+
 ## Annotation Processing Rules
 
-### `@ExcelModel`
+### 1. Class Level: `@ExcelModel`
+Marks a class as an Excel model. This is the entry point for the reader.
 
-Marks a class as an Excel Sheet model.
-
-- Only classes annotated with `@ExcelModel` are considered during the read process.
-- Defines which sheet should be read (by index).
+* **Rule:** Only classes annotated with `@ExcelModel` are processed.
+* **Function:** Defines which sheet index to read.
 
 ```java
 @ExcelModel(index = 0)
-public class EmployeeDto {
+public class EmployeeDto { 
+    //methods and attributes 
 }
 ```
+### 2. Field Level: @ExcelColumn
 
-Classes without `@ExcelModel` are not processed.
+Defines the mapping between a Java field and an Excel column.
 
----
+* **Rule**: The engine only reads fields annotated with `@ExcelColumn`.
 
-### `@ExcelColumn`
-
-Defines a field-to-column mapping.
-
-- Only fields annotated with `@ExcelColumn` are:
-  - Read from the Excel sheet
-  - Eligible for validation
-- Fields without `@ExcelColumn` are ignored by the engine.
+* **Function**: Binds the field to a column index. Fields without this annotation are skipped.
 
 ```java
 @ExcelColumn(index = 1)
 private String email;
 ```
 
----
+### 3. Validation Chain
+Validation annotations (like `@ExcelEmail`, `@ExcelRequired`) act as constraints on the data.
 
-### Validation Annotations
+> **IMPORTANT**  
+> Dependency Rule: Validation annotations are evaluated only if the field is also annotated with `@ExcelColumn`.
 
-Validation annotations act as constraints applied to a column.
+If you use a validation annotation without mapping the column, it will be **silently ignored**.
 
-- Validation annotations are evaluated **only** on fields annotated with `@ExcelColumn`
-- Validation annotations used **without** `@ExcelColumn` are **silently ignored** and will not be processed
 
-Valid example:
+**✅ Valid example:**
 ```java
-@ExcelColumn(index = 1)
-@ExcelEmail
-@ExcelRequired
+@ExcelColumn(index = 1) // Mapped
+@ExcelEmail             // Validated
 private String email;
 ```
 
-Ignored example:
+**❌ Incorrect (Will be ignored):**
 ```java
-@ExcelEmail
+@ExcelEmail             // No column mapping -> No validation
 private String email;
 ```
+
 ---
+
 ## Current Validations
 
 | Validation | Description |
@@ -208,6 +238,20 @@ private String email;
 | `@ExcelSize` | Validates the length of a string (min and/or max size). |
 
 
+## How it Works (The Pipeline)
+
+MyPoio processes data in a streamlined pipeline, ensuring separation of concerns between
+reading, binding, and validating.
+
+```mermaid
+graph LR
+    A[Excel Row] -->|Extraction| B[Raw Data]
+    B -->|Binding| C{Validation Engine}
+    C -->|Pass| D[Valid POJO List]
+    C -->|Fail| E[Error Report]
+    D & E --> F[ExcelResult]
+```
+
 ---
 ## Project Roadmap
 
@@ -219,23 +263,7 @@ private String email;
 4. Ability to skip validations when needed ✅  
 5. Minimized coupling through dynamic initializers and interfaces ✅  
 6. Reduced dependency on error-return structures (cleaner result model) ✅  
-7. Decoupling from Apache POI (used as default implementation, not a hard dependency) ✅  
-
----
-
-### Planned / In Progress
-
-8. Column mapping by name (currently supported only by column index)  
-9. Type conversion after validation (String → Integer, LocalDate, Enum, etc.)  
-10. Data normalization layer  
-   - Example: `Male/Female`, `M/F`, `1/0` → single canonical representation  
-   - Especially useful for Data Warehousing and analytics use cases  
-11. Multi-sheet processing  
-   - Support reading multiple sheets (1..N) instead of a fixed sheet  
-12. Direct Excel-to-Type processing  
-   - Optional fast path that skips intermediate validation steps when desired  
-13. Cross-column validation  
-   - Example: if column A is filled, column B becomes required  
+7. Decoupling from Apache POI (used as default implementation, not a hard dependency) ✅
 
 ---
 
