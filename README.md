@@ -238,6 +238,20 @@ private String email;
 | `@ExcelSize` | Validates the length of a string (min and/or max size). |
 
 
+## How it Works (The Pipeline)
+
+MyPoio processes data in a streamlined pipeline, ensuring separation of concerns between
+reading, binding, and validating.
+
+```mermaid
+graph LR
+    A[Excel Row] -->|Extraction| B[Raw Data]
+    B -->|Binding| C{Validation Engine}
+    C -->|Pass| D[Valid POJO List]
+    C -->|Fail| E[Error Report]
+    D & E --> F[ExcelResult]
+```
+
 ---
 ## Project Roadmap
 
