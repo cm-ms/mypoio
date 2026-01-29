@@ -1,0 +1,20 @@
+package mypoio.annotations.constraints;
+
+import mypoio.annotations.ExcelConstraint;
+import mypoio.core.validators.constraints.SizeValidator;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+@ExcelConstraint(validatedBy = SizeValidator.class)
+public @interface ExcelSize {
+    int min() default 0; // Opcional, por padrão aceita qualquer tamanho >= 0
+
+    int max() default Integer.MAX_VALUE;
+
+    String message() default "{address}- The length must be between {min} and {max} characters.";
+}
