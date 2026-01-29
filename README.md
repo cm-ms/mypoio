@@ -32,7 +32,7 @@ MyPoio cooks it for you. It takes the "raw" POI and serves you clean, validated,
 <dependency>
   <groupId>io.github.cm-ms</groupId>
   <artifactId>mypoio</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.3</version>
 </dependency>
 ```
 
@@ -109,7 +109,19 @@ public class MyController {
   }
 }
 ```
+#### How it Works?
 
+MyPoio processes data in a streamlined pipeline, ensuring separation of concerns between
+reading, binding, and validating.
+
+```mermaid
+graph LR
+    A[Excel Row] -->|Extraction| B[Raw Data]
+    B -->|Binding| C{Validation Engine}
+    C -->|Pass| D[Valid POJO List]
+    C -->|Fail| E[Error Report List]
+    D & E --> F[ExcelResult]
+```
 ---
 
 ## Custom Validation
@@ -169,6 +181,83 @@ public class EmployeeDto {
 That's it! Now just run the reader and watch the magic happen. The library automatically detects your annotation and applies your validation logic to every row.
 
 ---
+
+## Advanced: Pipelines & Batch Processing
+
+For large files, loading the entire result into memory is not efficient. MyPoio provides a **Pipeline API** that allows you to process data in **chunks**, transforming and saving it as it streams.
+
+This approach is perfect for **ETL operations**, keeping your memory footprint low.
+
+### ⚙️ How the Pipeline Works
+
+```mermaid
+graph LR
+A[Excel Source] -->|Read Chunk| B(Process Chunk)
+B -->|Pipeline| C{Valid?}
+C -->|Yes| D[Map to Entity]
+C -->|No| E[Log Error]
+D -->|Accumulate| F[Batch Save]
+F --> A
+```
+
+#### Scenario 1: The "Streamlined" Flow (ETL Style)
+Use this when you only care about valid data and want to transform and save it directly to a database.
+
+* **`withChunkSize(n)`**: defines the batch size.
+* **`onlyValid()`**: automatically filters out rows with errors (unwraps the result).
+* **`map()`**: transforms the DTO into your domain entity.
+* **`forEachChunk()`**: executes a consumer (e.g., repository save) for every batch.
+
+```java
+new ExcelReader<>(PersonDto.class)
+    .offsetRow(1)
+    .withChunkSize(100) // Process 100 rows at a time
+    .pipeline()
+    .onlyValid() // Filter valid DTOs automatically
+    .map(Person::new) // Transform DTO -> Entity
+    .forEachChunk(personRepository::saveAll) // Batch insert
+    .read(inputStream);
+```
+
+#### Scenario 2: Granular Control (Mixed Valid/Invalid)
+Use `forEachItemChunk` when you need access to the `ExcelResultItem` wrapper to handle both success and failure cases within the same batch.
+
+```java
+new ExcelReader<>(PersonDto.class)
+    .withChunkSize(50)
+    .pipeline()
+    .forEachItemChunk(items -> {
+        List<Person> validEntities = new ArrayList<>();
+
+        for (ExcelResultItem<PersonDto> item : items) {
+            if (item.isValid()) {
+                // Happy path: Collect for saving
+                validEntities.add(new Person(item.getData()));
+            } else {
+                // Error path: Log or handle specific errors
+                log.error("Row {} failed: {}", item.getRowNumber(), item.getErrors());
+            }
+        }
+        
+        // Save the valid batch
+        personRepository.saveAll(validEntities);
+    })
+    .read(inputStream);
+```
+
+---
+
+### 🔑 Key Pipeline Methods
+
+| Method | Description |
+|:---|:---|
+| `.withChunkSize(int)` | Defines how many rows are processed in memory before flushing. |
+| `.pipeline()` | Switches the reader to Pipeline Mode. |
+| `.onlyValid()` | Filters the stream to return only valid data objects (discards errors). |
+| `.map(Function)` | Transforms the data object (e.g., `DTO` -> `Entity`). |
+| `.forEachChunk(Consumer)` | Executes an action on a list of transformed objects. |
+| `.forEachItemChunk(Consumer)` | Executes an action on a list of `ExcelResultItem` wrappers (gives you access to errors). |
+
 
 ## Annotation Processing Rules
 
@@ -238,19 +327,7 @@ private String email;
 | `@ExcelSize` | Validates the length of a string (min and/or max size). |
 
 
-## How it Works (The Pipeline)
 
-MyPoio processes data in a streamlined pipeline, ensuring separation of concerns between
-reading, binding, and validating.
-
-```mermaid
-graph LR
-    A[Excel Row] -->|Extraction| B[Raw Data]
-    B -->|Binding| C{Validation Engine}
-    C -->|Pass| D[Valid POJO List]
-    C -->|Fail| E[Error Report]
-    D & E --> F[ExcelResult]
-```
 
 ---
 ## Project Roadmap
