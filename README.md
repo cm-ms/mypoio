@@ -32,7 +32,7 @@ MyPoio cooks it for you. It takes the "raw" POI and serves you clean, validated,
 <dependency>
   <groupId>io.github.cm-ms</groupId>
   <artifactId>mypoio</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.3</version>
 </dependency>
 ```
 
