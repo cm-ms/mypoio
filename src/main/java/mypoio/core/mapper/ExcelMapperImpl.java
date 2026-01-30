@@ -23,30 +23,42 @@ public class ExcelMapperImpl implements ExcelMapper {
         ExcelSource source = context.getSource();
         Class<T> clazz = context.getClazz();
 
-        ExcelSheet sheet = source.readSheet(clazz);
+        ExcelSheet sheet = source.readSheet(clazz); // get sheet with Iterable
         List<MappedField> mappedFields = prepareMetadata(clazz);
 
-        int lastRowInSheet = sheet.getLastRowNum();
-        int start = context.getOffsetRow();
-        int end = context.calculateEndRow(lastRowInSheet);
+        int offset = context.getOffsetRow();
         int chunkSize = context.getChunkSize();
+        int limit = context.getLimit();
 
-        List<ExcelResultItem<T>> currentChunk = new ArrayList<>(
-                context.suggestInitialCapacity(chunkSize, lastRowInSheet)
-        );
+        List<ExcelResultItem<T>> currentChunk = context.createChunkBuffer();
 
-        for (int i = start; i <= end; i++) {
+        // controllers Loop
+        int physicalRowIndex = 0;
+        int processedItemsCount = 0;
+
+        for (ExcelRow excelRow: sheet) {
+
+            if(physicalRowIndex < offset) {
+                physicalRowIndex ++;
+                continue;
+            }
+
+            if(limit > 0 && processedItemsCount >= limit) {
+                break;
+            }
+
             try {
-                ExcelRow excelRow = sheet.getExcelRow(i);
-
                 if (excelRow.rowIsNullOrEmpty()) {
+                    physicalRowIndex++;
                     continue;
                 }
 
                 List<ExcelError> errors = new ArrayList<>();
 
                 T object = mapRowToInstance(clazz, excelRow, mappedFields, errors, context.isSkipValidation());
-                currentChunk.add(new ExcelResultItem<>(object, i, errors));
+
+                currentChunk.add(new ExcelResultItem<>(object, physicalRowIndex, errors));
+                processedItemsCount++;
 
                 if (currentChunk.size() >= chunkSize) {
                     chunkConsumer.accept(new ArrayList<>(currentChunk));
@@ -56,10 +68,13 @@ public class ExcelMapperImpl implements ExcelMapper {
                 if (!currentChunk.isEmpty()) {
                     chunkConsumer.accept(currentChunk);
                 }
-                throw new ExcelPipelineException("Unexpected failure while processing line " + i + ": " + e.getMessage(), e);
+                throw new ExcelPipelineException("Unexpected failure while processing line " + physicalRowIndex + ": " + e.getMessage(), e);
             }
+
+            physicalRowIndex++;
         }
 
+        // alguns casos, para o currentChunk.size < chunkSize, garante que os dados sejam consumidos
         if (!currentChunk.isEmpty()) {
             chunkConsumer.accept(currentChunk);
         }
@@ -93,7 +108,7 @@ public class ExcelMapperImpl implements ExcelMapper {
             if (ann != null) {
                 if (!f.getType().equals(String.class)) {
                     throw new ExcelPipelineException(String.format(
-                            "Invalid field type: '%s' in class '%s' must be a String.",
+                            "Invalid field type: '%s' in class '%s' must be a String. Type conversion is not yet supported.",
                             f.getName(), clazz.getSimpleName()
                     ));
                 }
@@ -110,7 +125,7 @@ public class ExcelMapperImpl implements ExcelMapper {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException e) {
-            throw new ExcelPipelineException("The class " + clazz.getSimpleName() + " needs a public constructor with no arguments.");
+            throw new ExcelPipelineException("Class '" + clazz.getSimpleName() + "' must have a public no-arguments constructor.");
         }
     }
 
