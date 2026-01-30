@@ -1,6 +1,10 @@
 package mypoio.core;
 
 import mypoio.core.reader.ExcelSource;
+import mypoio.domain.ExcelResultItem;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ExcelMappingContext<T> {
     private final Class<T> clazz;
@@ -13,47 +17,15 @@ public class ExcelMappingContext<T> {
     public ExcelMappingContext(Class<T> clazz) {
         this.clazz = clazz;
         this.offsetRow = 1;
-        this.limit = Integer.MAX_VALUE;
-        this.chunkSize = Integer.MAX_VALUE; // Ajustado para processamento completo por padrão
+        this.limit = 0; // 0 será o processa tudo
+        this.chunkSize = 1000; // Valor seguro padrão para batch
         this.skipValidation = false;
     }
 
-    /**
-     * Calcula o índice da última linha a ser processada.
-     *
-     * @param lastRowInSheet O índice da última linha real da planilha (POI sheet.getLastRowNum())
-     * @return O índice final respeitando o limit definido pelo usuário.
-     */
-    public int calculateEndRow(int lastRowInSheet) {
-        if (limit == Integer.MAX_VALUE) {
-            return lastRowInSheet;
-        }
-        // Exemplo: começa na 2, limite de 5. Deve ir até a 6 (2,3,4,5,6).
-        return Math.min(lastRowInSheet, offsetRow + limit - 1);
+    public List<ExcelResultItem<T>> createChunkBuffer() {
+        int capacity = (chunkSize > 0 && chunkSize <= 5000) ? chunkSize : 5000;
+        return new ArrayList<>(capacity);
     }
-
-    /**
-     * Sugere a capacidade inicial da ArrayList para evitar redimensionamentos (resize) caros na Heap.
-     *
-     * @param chunkSize      O tamanho do lote atual.
-     * @param lastRowInSheet O total de linhas da planilha.
-     * @return Um valor de capacidade seguro para a ArrayList.
-     */
-    public int suggestInitialCapacity(int chunkSize, int lastRowInSheet) {
-        int endRow = calculateEndRow(lastRowInSheet);
-        int totalToProcess = Math.max(0, endRow - offsetRow + 1);
-
-        // A capacidade deve ser o menor entre o chunk e o total real de linhas
-        int capacity = Math.min(chunkSize, totalToProcess);
-
-        // Proteção contra valores absurdos ou negativos
-        if (capacity <= 0) return 10;
-        if (capacity > 10000) return 1000; // Cap de segurança para memória
-
-        return capacity;
-    }
-
-    // --- Getters e Setters ---
 
     public Class<T> getClazz() {
         return clazz;
