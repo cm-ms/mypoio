@@ -4,6 +4,7 @@ import mypoio.core.mapper.factory.ExcelMapperFactory;
 import mypoio.core.reader.ExcelSource;
 import mypoio.core.reader.ExcelSourceFactory;
 import mypoio.domain.ExcelResultItem;
+import mypoio.exceptions.ExcelPipelineException;
 
 import java.io.InputStream;
 import java.util.List;
@@ -18,8 +19,10 @@ public class ExcelReaderExecutor<T> {
 
         try (ExcelSource source = sourceFactory.create(is)) {
             run(source, context, mapperFactory, consumer);
+        } catch (ExcelPipelineException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao processar InputStream: " + e.getMessage(), e);
+            throw new ExcelPipelineException("Failed to process InputStream: " + e.getMessage(), e);
         }
     }
 
@@ -31,8 +34,10 @@ public class ExcelReaderExecutor<T> {
 
         try (ExcelSource source = sourceFactory.create(filePath)) {
             run(source, context, mapperFactory, consumer);
+        } catch (ExcelPipelineException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Erro ao processar arquivo " + filePath + ": " + e.getMessage(), e);
+            throw new ExcelPipelineException("Failed to process InputStream: " + e.getMessage(), e);
         }
     }
 

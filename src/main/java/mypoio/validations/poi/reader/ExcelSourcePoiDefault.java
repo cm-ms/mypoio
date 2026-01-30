@@ -50,7 +50,7 @@ public class ExcelSourcePoiDefault implements ExcelSource {
             try {
                 workbook.close();
             } catch (IOException e) {
-                throw new ExcelPipelineException("Error closing workbook. Check if the file is open. Message: {}", e.getMessage());
+                throw new ExcelPipelineException("Error closing workbook. Check if the file is open or being used by another process. Message: " + e.getMessage());
             }
         }
     }
