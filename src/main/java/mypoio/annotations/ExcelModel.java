@@ -9,5 +9,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelModel {
     int index() default 0;
+    String reference() default "";
 }
 
