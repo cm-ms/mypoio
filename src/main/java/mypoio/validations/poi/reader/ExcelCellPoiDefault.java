@@ -26,32 +26,31 @@ public class ExcelCellPoiDefault implements ExcelCell {
         return getValueCel(cell);
     }
 
-    @Override
-    public int getColumnNum() {
-        return cell.getColumnIndex();
-    }
-
-    @Override
-    public int getRowNum() {
-        return cell.getRowIndex();
-    }
-
     private String getValueCel(Cell cell) {
         if (cell == null) return "";
 
-        if (CellType.NUMERIC.equals(cell.getCellType())) {
-            if (DateUtil.isCellDateFormatted(cell)) {
-                SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-                return sdf.format(cell.getDateCellValue());
-            }
-
-            return NumberToTextConverter.toText(cell.getNumericCellValue()).trim();
+        switch (cell.getCellType()) {
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
+                    return sdf.format(cell.getDateCellValue());
+                }
+                return NumberToTextConverter.toText(cell.getNumericCellValue()).trim();
+            case STRING:
+                return cell.getStringCellValue().replace("\u00A0", " ").trim();
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                try {
+                    return cell.getStringCellValue().trim();
+                } catch (Exception e) {
+                    return NumberToTextConverter.toText(cell.getNumericCellValue()).trim();
+                }
+            case BLANK:
+            case _NONE:
+                return "";
+            default:
+                return cell.toString().trim();
         }
-
-        if (CellType.STRING.equals(cell.getCellType())) {
-            return cell.getStringCellValue().replace("\u00A0", "").trim();
-        }
-
-        return cell.toString();
     }
 }

@@ -16,21 +16,9 @@ public interface ExcelCell {
 
     /**
      * Retrieves the raw string content of the cell.
-     * @return The cell value, or null if the cell is empty.
+     * @return an empty string if the cell is empty or null.
      */
     String getValue();
-
-    /**
-     * Returns the zero-based column index.
-     * @return Column index (0 for A, 1 for B, etc.).
-     */
-    int getColumnNum();
-
-    /**
-     * Returns the zero-based row index.
-     * @return Row index.
-     */
-    int getRowNum();
 
     /**
      * Checks if the cell is null, empty, or contains only whitespace.
