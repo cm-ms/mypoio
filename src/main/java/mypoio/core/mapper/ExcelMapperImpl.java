@@ -2,6 +2,7 @@ package mypoio.core.mapper;
 
 import mypoio.annotations.ExcelColumn;
 import mypoio.core.ExcelMappingContext;
+import mypoio.core.ExcelMetadataResolver;
 import mypoio.core.reader.ExcelCell;
 import mypoio.core.reader.ExcelRow;
 import mypoio.core.reader.ExcelSheet;
@@ -24,7 +25,7 @@ public class ExcelMapperImpl implements ExcelMapper {
         Class<T> clazz = context.getClazz();
 
         ExcelSheet sheet = source.readSheet(clazz); // get sheet with Iterable
-        List<MappedField> mappedFields = prepareMetadata(clazz);
+        List<MappedField> mappedFields = ExcelMetadataResolver.prepareMetadata(clazz);
 
         int offset = context.getOffsetRow();
         int chunkSize = context.getChunkSize();
@@ -81,14 +82,11 @@ public class ExcelMapperImpl implements ExcelMapper {
     }
 
     private <T> T mapRowToInstance(Class<T> clazz, ExcelRow excelRow, List<MappedField> mappedFields, List<ExcelError> errors, boolean skipValidation) throws Exception {
-        T object = createInstance(clazz);
+        T object = ExcelMetadataResolver.createInstance(clazz);
 
         for (MappedField mappedField : mappedFields) {
-            ExcelColumn excelColumn = mappedField.getExcelColumn();
             Field field = mappedField.getField();
-
-            ExcelCell excelCell = excelRow.getExcelCell(excelColumn.index());
-
+            ExcelCell excelCell = excelRow.getExcelCell(mappedField.getReferenceColumnIndex());
             field.set(object, excelCell.getValue());
 
             if (!skipValidation) {
@@ -99,34 +97,5 @@ public class ExcelMapperImpl implements ExcelMapper {
         return object;
     }
 
-    private <T> List<MappedField> prepareMetadata(Class<T> clazz) {
-        List<MappedField> mappedFields = new ArrayList<>();
-
-        for (Field f : clazz.getDeclaredFields()) {
-            ExcelColumn ann = f.getAnnotation(ExcelColumn.class);
-
-            if (ann != null) {
-                if (!f.getType().equals(String.class)) {
-                    throw new ExcelPipelineException(String.format(
-                            "Invalid field type: '%s' in class '%s' must be a String. Type conversion is not yet supported.",
-                            f.getName(), clazz.getSimpleName()
-                    ));
-                }
-
-                f.setAccessible(true);
-                mappedFields.add(new MappedField(f, ann));
-            }
-        }
-        return mappedFields;
-    }
-
-
-    private <T> T createInstance(Class<T> clazz) throws Exception {
-        try {
-            return clazz.getDeclaredConstructor().newInstance();
-        } catch (NoSuchMethodException e) {
-            throw new ExcelPipelineException("Class '" + clazz.getSimpleName() + "' must have a public no-arguments constructor.");
-        }
-    }
 
 }

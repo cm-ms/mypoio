@@ -4,6 +4,7 @@ import mypoio.annotations.ExcelModel;
 import mypoio.core.reader.ExcelSheet;
 import mypoio.core.reader.ExcelSource;
 import mypoio.exceptions.ExcelPipelineException;
+import mypoio.utils.MsgBundle;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
@@ -50,7 +51,7 @@ public class ExcelSourcePoiDefault implements ExcelSource {
             try {
                 workbook.close();
             } catch (IOException e) {
-                throw new ExcelPipelineException("Error closing workbook. Check if the file is open or being used by another process. Message: " + e.getMessage());
+                throw new ExcelPipelineException(MsgBundle.get("err.close.workbook", e.getMessage()));
             }
         }
     }
