@@ -44,7 +44,7 @@ Parsing Excel files is as simple as defining your data model. Just add annotatio
 
 1. **Annotate** your class with `@ExcelModel`.
 2. **Map** fields using `@ExcelColumn`.
-3. **Validate** the data using ready-made decorators such as @ExcelRequired or @ExcelAllowedValues, or with your own.
+3. **Validate** the data using ready-made decorators such as `@ExcelRequired` or `@ExcelAllowedValues`, or with your own.
 
 #### Example of DTO mapping
 
@@ -52,15 +52,15 @@ Parsing Excel files is as simple as defining your data model. Just add annotatio
 @ExcelModel(index = 0)
 public class EmployeeDto {
 
-    @ExcelColumn(index = 0)
+    @ExcelColumn(index = 0) // mapping by index
     @ExcelRequired
     private String name;
 
-    @ExcelColumn(index = 1)
+    @ExcelColumn(reference="B") // mapping by letter
     @ExcelEmail
     private String email;
 
-    @ExcelColumn(index = 2)
+    @ExcelColumn(reference="c") // mapping by letter
     @ExcelAllowedValues({"IT", "HR", "SALES"})
     private String department;
 }
