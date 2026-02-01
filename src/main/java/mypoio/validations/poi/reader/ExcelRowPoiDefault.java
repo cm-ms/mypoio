@@ -20,11 +20,17 @@ public class ExcelRowPoiDefault implements ExcelRow {
         return new ExcelCellPoiDefault(cell);
     }
 
+    @Override
     public boolean rowIsNullOrEmpty() {
         return row == null || isRowEmpty();
     }
 
     private boolean isRowEmpty() {
+
+        if (row.getFirstCellNum() < 0) {
+            return true;
+        }
+
         for (int c = row.getFirstCellNum(); c < row.getLastCellNum(); c++) {
             Cell cell = row.getCell(c);
             if (cell != null && cell.getCellType() != CellType.BLANK) {

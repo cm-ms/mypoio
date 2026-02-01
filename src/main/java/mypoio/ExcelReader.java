@@ -8,13 +8,15 @@ import mypoio.core.mapper.factory.ExcelMapperFactoryDefault;
 import mypoio.core.reader.ExcelSourceFactory;
 import mypoio.domain.ExcelResult;
 import mypoio.domain.ExcelResultItem;
+import mypoio.utils.MsgBundle;
 import mypoio.validations.poi.ExcelSourceFactoryPoiDefault;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class ExcelReader<T> implements ExcelPipeline<T> {
     private final ExcelMappingContext<T> context;
@@ -23,8 +25,8 @@ public class ExcelReader<T> implements ExcelPipeline<T> {
     private final ExcelReaderExecutor<T> executor;
 
     private boolean onlyValid = false;
-    private Function<T, ?> mapperFunction = (item) -> item;
-    private Consumer<List<ExcelResultItem<?>>> chunkConsumer;
+    private Function<T, Object> mapperFunction = item -> item;
+    private Consumer<List<ExcelResultItem<Object>>> chunkConsumer;
 
     public ExcelReader(Class<T> clazz) {
         this.context = new ExcelMappingContext<>(clazz);
@@ -58,6 +60,11 @@ public class ExcelReader<T> implements ExcelPipeline<T> {
         return this;
     }
 
+    public ExcelReader<T> withLocale(Locale locale) {
+        MsgBundle.init(locale);
+        return this;
+    }
+
     public ExcelPipeline<T> pipeline() {
         return this;
     }
@@ -71,18 +78,17 @@ public class ExcelReader<T> implements ExcelPipeline<T> {
     @Override
     @SuppressWarnings("unchecked")
     public <R> ExcelPipeline<R> map(Function<T, R> mapper) {
-        this.mapperFunction = (Function<T, ?>) mapper;
+        this.mapperFunction = (Function<T, Object>) mapper;
         return (ExcelPipeline<R>) this;
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public ExcelPipeline<T> forEachChunk(Consumer<List<T>> consumer) {
-        this.chunkConsumer = (List<ExcelResultItem<?>> items) -> {
-            List<T> dataOnly = items.stream()
-                    .map(item -> (T) item.getData())
-                    .collect(Collectors.toList());
-
+        this.chunkConsumer = (List<ExcelResultItem<Object>> items) -> {
+            List<T> dataOnly = new ArrayList<>(items.size());
+            for (ExcelResultItem<Object> item : items) {
+                dataOnly.add((T) item.getData());
+            }
             if (!dataOnly.isEmpty()) {
                 consumer.accept(dataOnly);
             }
@@ -93,7 +99,7 @@ public class ExcelReader<T> implements ExcelPipeline<T> {
     @Override
     @SuppressWarnings("unchecked")
     public ExcelPipeline<T> forEachItemChunk(Consumer<List<ExcelResultItem<T>>> consumer) {
-        this.chunkConsumer = (Consumer<List<ExcelResultItem<?>>>) (Consumer<?>) consumer;
+        this.chunkConsumer = (Consumer<List<ExcelResultItem<Object>>>) (Consumer<?>) consumer;
         return this;
     }
 
@@ -133,20 +139,20 @@ public class ExcelReader<T> implements ExcelPipeline<T> {
 
 
     private void pipelineConsumer(List<ExcelResultItem<T>> rawChunk) {
-        var stream = rawChunk.stream();
+        if (chunkConsumer == null) return;
 
-        if (onlyValid) {
-            stream = stream.filter(ExcelResultItem::isValid);
+        List<ExcelResultItem<Object>> processed = new ArrayList<>(rawChunk.size());
+
+        for (ExcelResultItem<T> item : rawChunk) {
+            if (onlyValid && !item.isValid()) {
+                continue;
+            }
+
+            Object mappedData = mapperFunction.apply(item.getData());
+            processed.add(new ExcelResultItem<>(mappedData, item.getRowNumber(), item.getErrors()));
         }
 
-        List<ExcelResultItem<?>> processed = stream
-                .map(item -> {
-                    Object mappedData = mapperFunction.apply(item.getData());
-                    return new ExcelResultItem<>(mappedData, item.getRowNumber(), item.getErrors());
-                })
-                .collect(Collectors.toList());
-
-        if (chunkConsumer != null && !processed.isEmpty()) {
+        if (!processed.isEmpty()) {
             chunkConsumer.accept(processed);
         }
     }

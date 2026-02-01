@@ -8,5 +8,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ExcelColumn {
-    int index();
+    int index() default -1;
+    String reference() default "";
 }
