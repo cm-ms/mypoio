@@ -14,13 +14,13 @@ import java.util.List;
 public final class MappedField {
 
     private final Field field;
-    private final ExcelColumn excelColumn;
+    private final int referenceColumnIndex;
     private final List<ValidatorContext> validators;
 
-    public MappedField(Field field, ExcelColumn excelColumn) {
+    public MappedField(Field field, int referenceColumnIndex) {
         this.field = field;
-        this.excelColumn = excelColumn;
         this.validators = discoverValidators(field);
+        this.referenceColumnIndex = referenceColumnIndex;
     }
 
     private List<ValidatorContext> discoverValidators(Field field) {
@@ -51,19 +51,17 @@ public final class MappedField {
         return contexts;
     }
 
-    public int getIndexColumn() {
-        return excelColumn.index();
-    }
 
     public Field getField() {
         return field;
     }
 
-    public ExcelColumn getExcelColumn() {
-        return excelColumn;
-    }
 
     public List<ValidatorContext> getValidators() {
         return validators;
+    }
+
+    public int getReferenceColumnIndex() {
+        return referenceColumnIndex;
     }
 }

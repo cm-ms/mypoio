@@ -17,8 +17,8 @@ public class ExcelMappingContext<T> {
     public ExcelMappingContext(Class<T> clazz) {
         this.clazz = clazz;
         this.offsetRow = 1;
-        this.limit = 0; // 0 será o processa tudo
-        this.chunkSize = 1000; // Valor seguro padrão para batch
+        this.limit = 0;
+        this.chunkSize = 1000;
         this.skipValidation = false;
     }
 

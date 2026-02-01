@@ -40,7 +40,7 @@ public class ValidateRequiredAnnotationConstraintsTest {
     @ExcelModel
     public static class RequiredValidate {
         @ExcelRequired
-        @ExcelColumn(index = 9)
+        @ExcelColumn(reference = "J")
         public String value;
     }
 }
