@@ -3,18 +3,20 @@ package mypoio.core;
 import mypoio.annotations.ExcelColumn;
 import mypoio.core.mapper.MappedField;
 import mypoio.exceptions.ExcelPipelineException;
+import mypoio.utils.MsgBundle;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 
 public class ExcelMetadataResolver {
-
     public static <T> T createInstance(Class<T> clazz) throws Exception {
         try {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException e) {
-            throw new ExcelPipelineException("Class '" + clazz.getSimpleName() + "' must have a public no-arguments constructor.");
+            throw new ExcelPipelineException(
+                    MsgBundle.get("constructor.no_default", clazz.getSimpleName())
+            );
         }
     }
 
@@ -38,18 +40,30 @@ public class ExcelMetadataResolver {
         String ref = ann.reference().trim();
         int idx = ann.index();
 
-        if (!ref.isEmpty()) {
+        boolean hasRef = !ref.isEmpty();
+        boolean hasIdx = idx >= 0;
+
+        if (!hasRef && !hasIdx) {
+            throw new ExcelPipelineException(
+                    MsgBundle.get("excel.column.missing",
+                            f.getName(),
+                            f.getDeclaringClass().getSimpleName())
+            );
+        }
+
+        if (hasRef) {
             if (!ref.matches("(?i)^[A-Z]+$")) {
-                throw new ExcelPipelineException(String.format(
-                        "Field '%s' has an invalid reference: '%s'. Use letters only.", f.getName(), ref));
+                throw new ExcelPipelineException(
+                        MsgBundle.get("excel.column.reference.invalid",
+                                f.getName(),
+                                f.getDeclaringClass().getSimpleName(),
+                                ref)
+                );
             }
+
             return columnReferenceToIndex(ref.toUpperCase());
         }
 
-        if (idx < 0) {
-            throw new ExcelPipelineException(String.format(
-                    "Field '%s' must define a valid 'index' or 'reference'.", f.getName()));
-        }
         return idx;
     }
 
@@ -63,8 +77,11 @@ public class ExcelMetadataResolver {
 
     private static void validateFieldType(Field f, Class<?> clazz) {
         if (!f.getType().equals(String.class)) {
-            throw new ExcelPipelineException(String.format(
-                    "Invalid field type: '%s' in '%s' must be a String.", f.getName(), clazz.getSimpleName()));
+            throw new ExcelPipelineException(
+                    MsgBundle.get("field.type.invalid",
+                            f.getName(),
+                            clazz.getSimpleName())
+            );
         }
     }
 }

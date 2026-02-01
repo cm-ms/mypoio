@@ -8,14 +8,15 @@ import mypoio.core.mapper.factory.ExcelMapperFactoryDefault;
 import mypoio.core.reader.ExcelSourceFactory;
 import mypoio.domain.ExcelResult;
 import mypoio.domain.ExcelResultItem;
+import mypoio.utils.MsgBundle;
 import mypoio.validations.poi.ExcelSourceFactoryPoiDefault;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class ExcelReader<T> implements ExcelPipeline<T> {
     private final ExcelMappingContext<T> context;
@@ -59,6 +60,11 @@ public class ExcelReader<T> implements ExcelPipeline<T> {
         return this;
     }
 
+    public ExcelReader<T> withLocale(Locale locale) {
+        MsgBundle.init(locale);
+        return this;
+    }
+
     public ExcelPipeline<T> pipeline() {
         return this;
     }
@@ -72,7 +78,6 @@ public class ExcelReader<T> implements ExcelPipeline<T> {
     @Override
     @SuppressWarnings("unchecked")
     public <R> ExcelPipeline<R> map(Function<T, R> mapper) {
-        // Guardamos a função de transformação
         this.mapperFunction = (Function<T, Object>) mapper;
         return (ExcelPipeline<R>) this;
     }
