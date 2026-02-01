@@ -113,6 +113,8 @@ public class ExcelMapperImpl implements ExcelMapper {
                     ));
                 }
 
+                resolveAndValidateIndex(ann, f);
+
                 f.setAccessible(true);
                 mappedFields.add(new MappedField(f, ann));
             }
@@ -126,6 +128,28 @@ public class ExcelMapperImpl implements ExcelMapper {
             return clazz.getDeclaredConstructor().newInstance();
         } catch (NoSuchMethodException e) {
             throw new ExcelPipelineException("Class '" + clazz.getSimpleName() + "' must have a public no-arguments constructor.");
+        }
+    }
+
+    private void resolveAndValidateIndex(ExcelColumn ann, Field f) {
+        String ref = ann.reference().trim();
+        int idx = ann.index();
+
+        if (!ref.isEmpty()) {
+            if (!ref.matches("(?i)^[A-Z]+$")) {
+                throw new ExcelPipelineException(String.format(
+                        "Field '%s' has an invalid reference: '%s'. Please use letters only (e.g., A, B, AA).",
+                        f.getName(), ref
+                ));
+            }
+            return;
+        }
+
+        if (idx < 0) {
+            throw new ExcelPipelineException(String.format(
+                    "Field '%s' must define a valid 'index' (>= 0) or a 'reference' (e.g., \"A\").",
+                    f.getName()
+            ));
         }
     }
 
