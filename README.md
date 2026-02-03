@@ -327,21 +327,6 @@ private String email;
 | `@ExcelSize` | Validates the length of a string (min and/or max size). |
 
 
-
-
----
-## Project Roadmap
-
-### Completed / Implemented
-
-1. Dynamic Excel reading using annotations (values initially treated as `String`) ✅  
-2. Dynamic validation engine inspired by Jakarta Validation ✅  
-3. Support for custom validation rules beyond the built-in ones ✅  
-4. Ability to skip validations when needed ✅  
-5. Minimized coupling through dynamic initializers and interfaces ✅  
-6. Reduced dependency on error-return structures (cleaner result model) ✅  
-7. Decoupling from Apache POI (used as default implementation, not a hard dependency) ✅
-
 ---
 
 ### Long-Term Goals
